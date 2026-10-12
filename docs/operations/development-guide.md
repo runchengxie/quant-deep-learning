@@ -143,6 +143,16 @@ The global unresolved-import ignore was removed from `ty`. Historical Colab Pyth
 
 The required quality gate runs in GitHub Actions for pull requests and updates to `main`. No local hooks are installed. Run the documented `uv run` commands before requesting a PR check if you want the same feedback locally. The Python workflow includes file hygiene, Ruff, formatting, notebook lint, type checking, the shared code-quality ratchet, pytest with coverage, smoke checks, and Python compilation. The separate `pages.yml` workflow runs frontend tests and the static Astro build on pull requests, and publishes on pushes to `main`. Tests fail if core-package branch coverage is below 80%. The manual `scripts/check.py` shortcut covers only the five Python commands listed above.
 
+The shared metrics command must name this checkout explicitly:
+
+```bash
+uv run --locked --extra dev research-code-quality --root . \
+  --scope src --scope scripts --scope tests \
+  --baseline docs/.code-quality-baseline.json --ratchet --json
+```
+
+The installed metrics CLI otherwise detects its root from its own module path, which can scan the environment rather than this repository. A zero-file scan is not evidence that this project's baseline passes.
+
 ## Dependencies
 
 Runtime and development dependencies are declared in `pyproject.toml`. Install the development environment with:

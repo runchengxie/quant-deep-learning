@@ -167,6 +167,7 @@ def test_migration_pointer_is_removed_and_quality_baseline_lives_in_docs() -> No
 
     assert not (ROOT / "MIGRATION-STATUS.md").exists()
     assert baseline.is_file()
+    assert "research-code-quality --root ." in workflow
     assert "--baseline docs/.code-quality-baseline.json" in workflow
 
 
