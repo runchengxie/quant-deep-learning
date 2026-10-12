@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import subprocess
+from multiprocessing.connection import Listener
 from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
@@ -19,8 +20,20 @@ def _project_python() -> Path:
     raise SystemExit("Missing project virtual environment. Run: uv sync --locked --extra dev")
 
 
+def _check_worker_ipc() -> None:
+    try:
+        with Listener():
+            pass
+    except OSError as error:
+        raise SystemExit(
+            "The test suite requires local IPC sockets for PyTorch worker tensors. "
+            "Run it in an environment that permits multiprocessing IPC."
+        ) from error
+
+
 def main() -> None:
     python = _project_python()
+    _check_worker_ipc()
     checks = (
         ("Ruff lint", [python, "-m", "ruff", "check", "."]),
         ("Ruff formatting", [python, "-m", "ruff", "format", "--check", "."]),

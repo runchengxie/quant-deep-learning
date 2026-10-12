@@ -127,7 +127,7 @@ Run the local gate with:
 python scripts/check.py
 ```
 
-The script runs:
+The script first probes local multiprocessing IPC, then runs:
 
 ```bash
 ruff check .
@@ -154,6 +154,12 @@ uv run --locked --extra dev research-code-quality --root . \
 The installed metrics CLI otherwise detects its root from its own module path, which can scan the environment rather than this repository. A zero-file scan is not evidence that this project's baseline passes.
 
 The 2026-10-12 audit of the `a9fed81` baseline found 227 Python files against a 223-file budget when the installed scanner was given `--root .`. The line-count budget also failed. The earlier implicit-root command returned a zero-file scan. These existing failures must be resolved without raising budgets or treating the empty scan as a passing gate.
+
+### Restricted test environments
+
+PyTorch worker processes pass tensors through shared storage and a local IPC socket. If a sandbox blocks that socket, serialization can fail in a background queue feeder while the parent waits for a result. The 2026-10-12 audit reproduced `PermissionError` at `multiprocessing.connection.SocketListener` in both multi-worker materialization and minute TCN training. The unchanged tests passed when local IPC was permitted.
+
+`scripts/check.py` now checks that a local listener can be opened and closed before starting pytest. A blocked probe exits with an English diagnostic. Run the full suite with local IPC permitted; do not omit worker tests or override their worker counts. This probe does not contact an external service or change dataset, checkpoint, or artifact contracts.
 
 ## Dependencies
 
