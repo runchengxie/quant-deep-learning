@@ -153,6 +153,8 @@ uv run --locked --extra dev research-code-quality --root . \
 
 The installed metrics CLI otherwise detects its root from its own module path, which can scan the environment rather than this repository. A zero-file scan is not evidence that this project's baseline passes.
 
+The 2026-10-12 audit of the `a9fed81` baseline found 227 Python files against a 223-file budget when the installed scanner was given `--root .`. The line-count budget also failed. The earlier implicit-root command returned a zero-file scan. These existing failures must be resolved without raising budgets or treating the empty scan as a passing gate.
+
 ## Dependencies
 
 Runtime and development dependencies are declared in `pyproject.toml`. Install the development environment with:

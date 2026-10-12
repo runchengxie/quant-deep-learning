@@ -33,7 +33,7 @@ uv run python scripts/check.py
 
 脚本运行 Ruff、格式检查、`ty`、pytest 覆盖率和合成 DeepLOB/FI-2010 冒烟检查。CI 是必需门禁，无需安装 Git hook。完整检查范围见[开发指南](docs/operations/development-guide.md)。
 
-Windows PowerShell 可用 `\.venv\Scripts\Activate.ps1` 激活环境。修改 `pyproject.toml` 的命令入口后，重新以 editable 模式安装项目，更新环境中的启动脚本。
+Windows PowerShell 可用 `.\.venv\Scripts\Activate.ps1` 激活环境。修改 `pyproject.toml` 的命令入口后，重新以 editable 模式安装项目，更新环境中的启动脚本。
 
 ## 文档
 
