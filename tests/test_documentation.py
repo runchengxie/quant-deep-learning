@@ -2,7 +2,13 @@ from __future__ import annotations
 
 import hashlib
 import re
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
+
+import pytest
+
+from scripts import check as local_checks
 
 ROOT = Path(__file__).resolve().parents[1]
 MARKDOWN_LINK = re.compile(r"(?<!!)\[([^\]]+)\]\(([^)]+)\)")
@@ -132,7 +138,7 @@ def test_archival_source_markers_are_balanced() -> None:
         for start, end in marker_pairs:
             if text.count(start) != text.count(end):
                 failures.append(f"{path.relative_to(ROOT)}: {start} / {end}")
-    assert not failures, "归档原文标记不成对:\n" + "\n".join(failures)
+    assert not failures, "Unbalanced archival source markers:\n" + "\n".join(failures)
 
 
 def test_external_comparison_archival_source_is_unchanged() -> None:
@@ -167,6 +173,7 @@ def test_migration_pointer_is_removed_and_quality_baseline_lives_in_docs() -> No
 
     assert not (ROOT / "MIGRATION-STATUS.md").exists()
     assert baseline.is_file()
+    assert "research-code-quality --root ." in workflow
     assert "--baseline docs/.code-quality-baseline.json" in workflow
 
 
@@ -211,7 +218,7 @@ def test_internal_markdown_links_exist() -> None:
                 resolved = (path.parent / target).resolve()
                 if not resolved.exists():
                     failures.append(f"{path.relative_to(ROOT)}:{line_number}: {target}")
-    assert not failures, "内部 Markdown 链接目标不存在:\n" + "\n".join(failures)
+    assert not failures, "Missing internal Markdown link targets:\n" + "\n".join(failures)
 
 
 def test_maintained_documentation_is_written_in_english() -> None:
@@ -232,3 +239,42 @@ def test_maintained_documentation_is_written_in_english() -> None:
 def test_english_inventory_covers_all_maintained_markdown() -> None:
     maintained = {path.relative_to(ROOT).as_posix() for path in _markdown_files()}
     assert maintained == ENGLISH_DOCUMENTS
+
+
+@pytest.mark.parametrize("errno", [1, 13])
+def test_local_quality_gate_rejects_blocked_worker_ipc(
+    monkeypatch: pytest.MonkeyPatch, errno: int
+) -> None:
+    commands: list[object] = []
+
+    def blocked_listener() -> None:
+        raise PermissionError(errno, "Local sockets are blocked")
+
+    monkeypatch.setattr(local_checks, "Listener", blocked_listener, raising=False)
+    monkeypatch.setattr(
+        local_checks.subprocess, "run", lambda *args, **kwargs: commands.append(args)
+    )
+    with pytest.raises(SystemExit, match="local IPC"):
+        local_checks.main()
+    assert not commands
+
+
+def test_local_quality_gate_closes_ipc_probe_before_running_checks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    events: list[str] = []
+
+    @contextmanager
+    def listener() -> Iterator[None]:
+        events.append("open")
+        yield
+        events.append("close")
+
+    def run(*args: object, **kwargs: object) -> local_checks.subprocess.CompletedProcess:
+        events.append("run")
+        return local_checks.subprocess.CompletedProcess([], 0)
+
+    monkeypatch.setattr(local_checks, "Listener", listener, raising=False)
+    monkeypatch.setattr(local_checks.subprocess, "run", run)
+    local_checks.main()
+    assert events == ["open", "close", "run", "run", "run", "run", "run"]

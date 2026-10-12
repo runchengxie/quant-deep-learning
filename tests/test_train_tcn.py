@@ -1,12 +1,19 @@
-"""分钟 TCN 训练入口测试。"""
+"""Tests for the minute TCN training entry point."""
 
 import json
 from dataclasses import replace
 
 import pytest
+import torch
 
 from tests.test_minute_tcn import _write_minute_manifest
-from ticknet.nextday.train_tcn import MinuteTCNConfig, evaluate_best_checkpoints, load_config, train
+from ticknet.nextday.train_tcn import (
+    MinuteTCNConfig,
+    evaluate_best_checkpoints,
+    load_config,
+    make_tcn_dataloaders,
+    train,
+)
 
 
 def _small_config(manifest_path, checkpoint_dir) -> MinuteTCNConfig:
@@ -85,7 +92,7 @@ def test_minute_tcn_load_config_unknown_yaml_key_rejected(tmp_path):
         load_config(["--config", str(config_path)])
 
 
-def test_minute_tcn_train_uses_no_workers_with_shared_arrays(tmp_path):
+def test_minute_tcn_training_supports_worker_loading(tmp_path):
     manifest_path = _write_minute_manifest(tmp_path, n_shards=4, samples_per_shard=3)
     checkpoint_dir = tmp_path / "ckpt2"
     config = replace(
@@ -93,5 +100,7 @@ def test_minute_tcn_train_uses_no_workers_with_shared_arrays(tmp_path):
         num_workers=1,
         epochs=1,
     )
+    loaders = make_tcn_dataloaders(config, device=torch.device("cpu"))
+    assert all(loader.num_workers == 1 and loader.persistent_workers for loader in loaders)
     result = train(config)
     assert result["samples"]["train"] > 0

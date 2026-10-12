@@ -1,5 +1,7 @@
 # Quant Deep Learning
 
+[Chinese README](README.zh-CN.md)
+
 Quant Deep Learning is an independent research project on end-to-end deep-learning models for structured market data. It began with a DeepLOB reproduction and now focuses on next-day cross-sectional prediction from Chinese A-share data, using order-book snapshots, minute-level inputs, and L2 event streams.
 
 The project owns model-specific representations, training, inference, evaluation, and study records. It can run without `quant-platform` or `quant-research`. `quant-market-data-platform` is the upstream provider; `quant-backtest-runtime` is the downstream artifact consumer. Neither side needs to import this repository's Python modules. See the [repository boundaries](docs/architecture/repository-boundaries.md).
@@ -31,7 +33,7 @@ uv run python scripts/check.py
 
 The check script runs Ruff, formatting checks, `ty`, pytest with coverage, and synthetic DeepLOB/FI-2010 smoke checks. CI is the required quality gate; no Git hooks need to be installed. The full [development guide](docs/operations/development-guide.md) describes the test and data boundaries.
 
-On Windows PowerShell, activate the environment with `\.venv\Scripts\Activate.ps1`. After changing command entry points in `pyproject.toml`, reinstall the project in editable mode so the environment's script launchers are refreshed.
+On Windows PowerShell, activate the environment with `.\.venv\Scripts\Activate.ps1`. After changing command entry points in `pyproject.toml`, reinstall the project in editable mode so the environment's script launchers are refreshed.
 
 ## Documentation
 

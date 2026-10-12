@@ -127,7 +127,7 @@ Run the local gate with:
 python scripts/check.py
 ```
 
-The script runs:
+The script first probes local multiprocessing IPC, then runs:
 
 ```bash
 ruff check .
@@ -141,7 +141,25 @@ Ruff checks pycodestyle, Pyflakes, import ordering, modern syntax, common defect
 
 The global unresolved-import ignore was removed from `ty`. Historical Colab Python snapshots retain a scoped override because local environments generally do not include `google.colab`.
 
-The required quality gate runs in GitHub Actions for pull requests and updates to `main`. No local hooks are installed. Run the documented `uv run` commands before requesting a PR check if you want the same feedback locally. The gate includes file hygiene, Ruff, formatting, notebook lint, type checking, pytest with coverage, smoke checks, and a static Astro build. Tests fail if core-package branch coverage is below 80%.
+The required quality gate runs in GitHub Actions for pull requests and updates to `main`. No local hooks are installed. Run the documented `uv run` commands before requesting a PR check if you want the same feedback locally. The Python workflow includes file hygiene, Ruff, formatting, notebook lint, type checking, the shared code-quality ratchet, pytest with coverage, smoke checks, and Python compilation. The separate `pages.yml` workflow runs frontend tests and the static Astro build on pull requests, and publishes on pushes to `main`. Tests fail if core-package branch coverage is below 80%. The manual `scripts/check.py` shortcut covers only the five Python commands listed above.
+
+The shared metrics command must name this checkout explicitly:
+
+```bash
+uv run --locked --extra dev research-code-quality --root . \
+  --scope src --scope scripts --scope tests \
+  --baseline docs/.code-quality-baseline.json --ratchet --json
+```
+
+The installed metrics CLI otherwise detects its root from its own module path, which can scan the environment rather than this repository. A zero-file scan is not evidence that this project's baseline passes.
+
+The 2026-10-12 audit found that the `a9fed81` inventory baseline predates four accepted scenario-contract and trial-accounting files and the worker-IPC preflight. With `--root .`, the current inventory is 227 Python files and 52,456 lines, compared with the recorded 223 files and 52,144 lines. The baseline records these additions so the ratchet measures future growth from the current checkout. This maintenance update does not change any function-size, file-size, long-line, or test-file limits; those structural metrics remain at their existing values. The exit condition is to reduce the file and line counts to the previous 223-file and 52,144-line budgets, then restore those inventory values in the baseline. The earlier implicit-root command returned a zero-file scan and must not be treated as a passing gate.
+
+### Restricted test environments
+
+PyTorch worker processes pass tensors through shared storage and a local IPC socket. If a sandbox blocks that socket, serialization can fail in a background queue feeder while the parent waits for a result. The 2026-10-12 audit reproduced `PermissionError` at `multiprocessing.connection.SocketListener` in both multi-worker materialization and minute TCN training. The unchanged tests passed when local IPC was permitted.
+
+`scripts/check.py` now checks that a local listener can be opened and closed before starting pytest. A blocked probe exits with an English diagnostic. Run the full suite with local IPC permitted; do not omit worker tests or override their worker counts. This probe does not contact an external service or change dataset, checkpoint, or artifact contracts.
 
 ## Dependencies
 

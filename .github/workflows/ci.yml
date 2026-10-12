@@ -85,7 +85,7 @@ jobs:
         run: uv run --locked --extra dev ty check
 
       - name: Run shared code-quality metrics
-        run: uv run --locked --extra dev research-code-quality --scope src --scope scripts --scope tests --baseline docs/.code-quality-baseline.json --ratchet --json
+        run: uv run --locked --extra dev research-code-quality --root . --scope src --scope scripts --scope tests --baseline docs/.code-quality-baseline.json --ratchet --json
 
       - name: Run tests with coverage
         run: uv run --locked --extra dev pytest --cov --cov-report=term-missing
