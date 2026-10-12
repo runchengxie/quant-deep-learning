@@ -132,7 +132,7 @@ def test_archival_source_markers_are_balanced() -> None:
         for start, end in marker_pairs:
             if text.count(start) != text.count(end):
                 failures.append(f"{path.relative_to(ROOT)}: {start} / {end}")
-    assert not failures, "归档原文标记不成对:\n" + "\n".join(failures)
+    assert not failures, "Unbalanced archival source markers:\n" + "\n".join(failures)
 
 
 def test_external_comparison_archival_source_is_unchanged() -> None:
@@ -211,7 +211,7 @@ def test_internal_markdown_links_exist() -> None:
                 resolved = (path.parent / target).resolve()
                 if not resolved.exists():
                     failures.append(f"{path.relative_to(ROOT)}:{line_number}: {target}")
-    assert not failures, "内部 Markdown 链接目标不存在:\n" + "\n".join(failures)
+    assert not failures, "Missing internal Markdown link targets:\n" + "\n".join(failures)
 
 
 def test_maintained_documentation_is_written_in_english() -> None:

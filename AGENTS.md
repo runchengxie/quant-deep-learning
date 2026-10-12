@@ -52,7 +52,7 @@ cd web && npm ci && npm test && npm run build:pages
 
 CI is the required quality gate. Do not install local Git hooks. The CI hygiene check validates changed files for size, conflict markers, JSON/TOML/YAML syntax, private-key markers, trailing whitespace, and final newlines. `scripts/check.py` remains a manual shortcut for the Python checks.
 
-The public synthetic-data CI workflow runs file hygiene, Ruff, formatting, `ty`, notebook lint, pytest with coverage, smoke checks, Python compilation, and the static site build on pull requests and pushes to `main`. It requires no private credentials, real market data, or GPU. Full training, slow tests, and GPU checks remain manual or on demand. Python 3.10 compatibility and dependency security are outside this workflow. Validate them in Python 3.10 when a change creates a relevant risk.
+The public synthetic-data CI workflow runs file hygiene, Ruff, formatting, `ty`, notebook lint, pytest with coverage, the shared code-quality ratchet, smoke checks, and Python compilation on pull requests and pushes to `main`. The separate `pages.yml` workflow runs frontend tests and the static site build. It requires no private credentials, real market data, or GPU. Full training, slow tests, and GPU checks remain manual or on demand. Python 3.10 compatibility and dependency security are outside this workflow. Validate them in Python 3.10 when a change creates a relevant risk.
 
 When changing data protocols, add regression tests for incorrect selections, wrong label columns, and windows crossing files. For checkpoint changes, test resume positions and configuration conflicts. Before documenting a command, confirm its options with `--help`.
 

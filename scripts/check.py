@@ -1,4 +1,4 @@
-"""运行供开发者手动执行的本地质量检查。"""
+"""Run the manual local Python quality checks."""
 
 from __future__ import annotations
 
@@ -16,22 +16,20 @@ def _project_python() -> Path:
     for candidate in candidates:
         if candidate.is_file():
             return candidate
-    raise SystemExit(
-        '缺少项目虚拟环境。请先创建 .venv 并安装开发依赖： python -m pip install -e ".[dev]"'
-    )
+    raise SystemExit("Missing project virtual environment. Run: uv sync --locked --extra dev")
 
 
 def main() -> None:
     python = _project_python()
     checks = (
-        ("Ruff 静态检查", [python, "-m", "ruff", "check", "."]),
-        ("Ruff 格式检查", [python, "-m", "ruff", "format", "--check", "."]),
-        ("ty 类型检查", [python, "-m", "ty", "check"]),
+        ("Ruff lint", [python, "-m", "ruff", "check", "."]),
+        ("Ruff formatting", [python, "-m", "ruff", "format", "--check", "."]),
+        ("ty type checks", [python, "-m", "ty", "check"]),
         (
-            "pytest 与覆盖率",
+            "pytest and coverage",
             [python, "-m", "pytest", "--cov", "--cov-report=term-missing"],
         ),
-        ("冒烟检查", [python, "scripts/smoke_test.py"]),
+        ("Synthetic smoke checks", [python, "scripts/smoke_test.py"]),
     )
 
     for label, command in checks:
@@ -40,7 +38,7 @@ def main() -> None:
         if completed.returncode:
             raise SystemExit(completed.returncode)
 
-    print("\n全部本地质量门禁通过。")
+    print("\nAll manual Python quality checks passed.")
 
 
 if __name__ == "__main__":

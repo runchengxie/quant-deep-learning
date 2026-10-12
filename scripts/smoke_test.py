@@ -1,6 +1,6 @@
 """Run lightweight synthetic-data model and FI-2010 checks.
 
-运行方式：
+Usage:
 
     python scripts/smoke_test.py
 
@@ -29,7 +29,7 @@ def check_forward_pass() -> None:
     assert features.shape == (8, 1, WINDOW_SIZE, NUM_FEATURES)
     assert logits.shape == (8, NUM_CLASSES)
     assert torch.allclose(probabilities.sum(dim=1), torch.ones(8), atol=1e-5)
-    print("通过：前向传播形状和 softmax 概率")
+    print("Passed: forward-pass shapes and softmax probabilities")
 
 
 def check_gradient_flow() -> None:
@@ -41,13 +41,13 @@ def check_gradient_flow() -> None:
     assert gradients
     assert all(gradient is not None for gradient in gradients)
     assert all(torch.isfinite(gradient).all() for gradient in gradients if gradient is not None)
-    print(f"通过：梯度存在且为有限值，损失为 {loss.item():.4f}")
+    print(f"Passed: gradients exist and are finite; loss = {loss.item():.4f}")
 
 
 def check_parameter_count() -> None:
     parameter_count = sum(parameter.numel() for parameter in build_model().parameters())
     assert 55_000 < parameter_count < 70_000
-    print(f"通过：模型参数量为 {parameter_count:,}，符合论文约 60k 的规模")
+    print(f"Passed: parameter count = {parameter_count:,} (expected approximately 60k)")
 
 
 def main() -> None:
