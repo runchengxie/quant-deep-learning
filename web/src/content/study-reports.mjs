@@ -37,7 +37,7 @@ export const studyReports = {
         paragraphs: [
           text(
             'The three-seed run trained on August–October 2025, selected checkpoints on November validation data, and evaluated once on December 2025. Each seed used 120,000 fixed training windows; the validation and out-of-sample sets contained 5,807 and 6,966 stock-days.',
-            '三随机种子实验使用 2025 年 8–10 月训练，在 11 月验证集上选择检查点，并在 2025 年 12 月进行样本外评估。每个种子使用 120,000 个固定训练窗口；验证集和样本外集分别包含 5,807 和 6,966 个股票日。',
+            '三随机种子实验使用 2025 年 8 至 10 月训练，在 11 月验证集上选择检查点，并在 2025 年 12 月进行样本外评估。每个种子使用 120,000 个固定训练窗口；验证集和样本外集分别包含 5,807 和 6,966 个股票日。',
           ),
           text(
             'All three December Rank IC values were positive. The mean was 0.04300, compared with a validation mean of 0.07259. The lower out-of-sample mean and the variation across seeds are reasons to treat this as an early signal, not a stable performance estimate.',
@@ -85,7 +85,7 @@ export const studyReports = {
           title: text('Interpretation', '如何解读'),
           body: text(
             'The event-stream model produced a repeatable positive ranking metric in this month. The joint-model portfolio still fell short of its benchmark after costs. More time periods and improvements to the trading objective are needed before claiming durable trading value.',
-            '事件流模型在这个月呈现出重复的正向排序指标，但联合模型组合计入成本后仍未跑赢基准。要判断交易价值能否持续，还需要更多时间区间的结果，并改进交易目标。',
+            '换了三个随机种子训练，事件流模型在这个月的 Rank IC 都为正，但联合模型组合计入成本后仍未跑赢基准。要判断交易价值能否持续，还需要更多时间区间的结果，并改进交易目标。',
           ),
         },
       },
@@ -94,11 +94,11 @@ export const studyReports = {
         paragraphs: [
           text(
             'The three-seed result covers one recent out-of-sample month. A separate adjacent-fold run has one seed and one test month; its H5 Rank IC was positive, but its OOS extreme-group return spread was negative. Neither result establishes persistence across market regimes.',
-            '三随机种子结果只覆盖一个近期样本外月份。另一相邻时间区间目前只有一个种子和一个测试月；该实验的 H5 Rank IC 为正，但样本外极端分组收益差为负。两项结果都不能证明信号能跨市场阶段持续。',
+            '三随机种子结果只覆盖一个近期样本外月份。另一个相邻日期区间目前只训练了一个随机种子，测试也只覆盖一个月；该实验的 H5 Rank IC 为正，但样本外极端分组收益差为负。两项结果都不能证明信号能跨市场阶段持续。',
           ),
           text(
             'Daily-task weighting is the next planned model ablation. Capacity expansion to the 150M model remains paused until ranking improvements also show up in cost-adjusted portfolio results across more than one window.',
-            '下一步计划测试日级任务权重。150M 参数模型扩容实验仍暂停，直到排序指标的改善也能在多个时间区间的成本后组合结果中体现出来。',
+            '下一步计划调整训练时每日预测任务所占的权重。暂时不把模型扩大到 1.5 亿参数，先检验排序改善能否在多个日期区间带来扣除成本后的组合收益改善。',
           ),
         ],
       },
@@ -120,7 +120,7 @@ export const studyReports = {
           ),
           text(
             'The controlled comparison used a Top-100 stock universe and the same next-day excess-return target in all four settings. Training dates were 2021–2023, validation was 2024, and 2025 remained locked.',
-            '受控对比在四种配置中都使用 Top-100 股票池和相同的次日超额收益目标。训练区间为 2021–2023 年，验证区间为 2024 年，2025 年测试集保持锁定。',
+            '受控对比在四种配置中都使用 Top-100 股票池和相同的次日超额收益目标。训练区间为 2021 至 2023 年，验证区间为 2024 年，2025 年测试集保持锁定。',
           ),
         ],
         pipeline: {
@@ -167,7 +167,7 @@ export const studyReports = {
           ),
           text(
             'The observed capacity effect was −0.00693 on average, while the window effect was +0.00097. The interaction was +0.00631. With three seeds and validation-only selection, these are descriptive comparisons—not significance or out-of-sample results.',
-            '观察到的模型规模主效应均值为 −0.00693，窗口主效应为 +0.00097，交互效应为 +0.00631。由于每种配置只有三个种子，且选择依据是验证集，这些数值只描述本次对比，不代表统计显著或样本外结果。',
+            '把模型从 1M 扩大到 100M 后，平均 Rank IC 变化为 −0.00693；把输入从 200 条延长到 1,000 条后，平均变化为 +0.00097。两项变化合在一起的影响并非简单相加，交互效应为 +0.00631。由于每种配置只有三个种子，且选择依据是验证集，这些数值只描述本次对比，不代表统计显著或样本外结果。',
           ),
         ],
         chart: {
@@ -201,11 +201,11 @@ export const studyReports = {
     ],
     sections: [
       {
-        title: text('A lower-cost model path', '成本较低的模型路线'),
+        title: text('A lower-cost model path', '用分钟汇总数据训练模型'),
         paragraphs: [
           text(
             'Minute models compress intraday market activity into aggregate features rather than processing every order-book event. The formal HGB model used 120 aggregate features built from order, trade, and snapshot data, then ranked a daily universe of 400 stocks.',
-            '分钟模型将日内市场活动压缩为聚合特征，而不是逐条处理盘口事件。正式 HGB 模型使用由委托、成交和快照数据生成的 120 项聚合特征，并在每日 400 只股票的股票池中进行排序。',
+            '分钟模型先把一段时间里的委托、成交和盘口变化汇总成数字，再用这些数字训练。正式 HGB 模型使用由委托、成交和快照数据生成的 120 项聚合特征，并在每日 400 只股票的股票池中进行排序。',
           ),
           text(
             'The formal dataset covers July 2021 through December 2025. It contains 436,800 candidate stock-days; 436,256 have complete features (99.88%). The final six-month period includes 124 evaluation days and 49,600 candidates.',
@@ -224,20 +224,20 @@ export const studyReports = {
         },
       },
       {
-        title: text('Ranking held up; the cost gate did not', '排序指标为正，但成本门槛未通过'),
+        title: text('Ranking held up; the cost gate did not', '排序指标为正，扣除成本后仍跑输基准'),
         paragraphs: [
           text(
             'The 2025 H2 formal run had positive monthly Rank IC in all six months and a mean daily Rank IC of 0.06994. The separate annual chart above shows earlier rolling OOS baselines; its 2025 bar is not the same calculation as this formal H2 evaluation.',
             '2025 年下半年的正式评估中，六个月的月度 Rank IC 均为正，日均 Rank IC 为 0.06994。上方年度图展示的是较早的滚动样本外基线；其中 2025 年的柱与本次 H2 正式评估不是同一项计算。',
           ),
           text(
-            'The cost matrix tested four portfolio sizes (K=25/50/75/100) and four exit buffers (0/10/25/50) at a 10 bp one-way cost plus 5 bp sell stamp duty. All 16 combinations had negative net active return versus the equal-weight Top-400 benchmark.',
-            '成本矩阵测试了四种持仓数量（K=25/50/75/100）和四种卖出缓冲（0/10/25/50），成本设为单边 10 个基点，卖出另计 5 个基点印花税。16 种配置的净超额收益都低于 Top-400 等权基准。',
+            'The full grid crossed four portfolio sizes (K=25/50/75/100), four exit buffers (0/10/25/50), and four one-way cost levels (5/10/15/20 bp), making 64 configuration/cost combinations. This matrix shows the 16 portfolios at 10 bp one-way cost plus 5 bp sell stamp duty. All 16 combinations had negative net active return versus the equal-weight Top-400 benchmark.',
+            '完整网格包含四种持仓数量（K=25/50/75/100）、四种卖出缓冲（0/10/25/50）和四档单边成本（5/10/15/20 个基点），共 64 个配置与成本组合。这里展示固定单边成本为 10 个基点时的 16 种组合，卖出另计 5 个基点印花税。16 种配置的净超额收益都低于 Top-400 等权基准。',
           ),
         ],
         matrix: {
-          title: text('Cost-gate outcome at the 10 bp decision cost', '单边 10 个基点决策成本下的检验结果'),
-          description: text('Every tested K/buffer pair had negative net active return after costs. Buffer values are exit-buffer ranks.', '所有 K/缓冲配置计入成本后的净超额收益均为负。缓冲值表示退出排序缓冲。'),
+          title: text('Cost-gate outcome at the 10 bp decision cost', '单边成本为 0.1% 时，16 种组合的检验结果'),
+          description: text('Every tested K/buffer pair had negative net active return after costs. Buffer values are exit-buffer ranks.', '所有 K/缓冲配置计入成本后的净超额收益均为负。卖出缓冲表示已持有的股票跌到前 K 名之后多少名才卖出。'),
           rowHeader: text('Portfolio size K', '组合持仓数 K'),
           columnHeader: text('Exit buffer', '退出缓冲'),
           ks: [25, 50, 75, 100],
@@ -250,7 +250,7 @@ export const studyReports = {
         paragraphs: [
           text(
             'K=100 with a 50-rank exit buffer had the best absolute net return in the tested matrix: 12.15 bp per day, with a net Sharpe ratio of 1.41 and 41.87% one-way daily turnover. Its net active return was still −4.75 bp per day, and only one of the six months was positive.',
-            '在测试矩阵中，K=100、退出缓冲为 50 的配置取得最高绝对净收益：日均 12.15 个基点，净 Sharpe 为 1.41，日均单边换手率为 41.87%。但其日均净超额收益仍为 −4.75 个基点，六个月中只有一个月为正。',
+            '在测试矩阵中，K=100、退出缓冲为 50 的配置取得最高绝对净收益，日均 12.15 个基点，净 Sharpe 为 1.41，日均单边换手率为 41.87%。但其日均净超额收益仍为 −4.75 个基点，六个月中只有一个月为正。',
           ),
           text(
             "Its active-return break-even cost was about 4.33 bp one way, below the 10 bp decision cost. Positive absolute return partly reflected the broad market's rise and is not standalone evidence of model alpha.",
@@ -266,7 +266,7 @@ export const studyReports = {
           title: text('Decision', '结论'),
           body: text(
             'The formal result is `NO_TRADEABLE_REGION` at the target cost. Minute HGB remains useful as a low-cost ranking baseline, but these experiments did not identify a portfolio setting that passed the pre-set net-return checks.',
-            '正式结论为目标成本下 `NO_TRADEABLE_REGION`。分钟 HGB 仍可作为低成本排序基线，但本次实验没有找到通过预设净收益检验的组合配置。',
+            '本次实验在设定成本下没有组合通过预设收益检验，记录中的结论代码为 `NO_TRADEABLE_REGION`。分钟 HGB 仍可作为低成本排序基线，但本次实验没有找到通过预设净收益检验的组合配置。',
           ),
         },
       },
