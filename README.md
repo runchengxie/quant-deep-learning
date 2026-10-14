@@ -24,7 +24,7 @@ The main research path uses trading-day splits and evaluates cross-sectional ran
 
 ## Quick start
 
-The public synthetic-data checks do not require private market data, a GPU, or `quant-platform`. Python 3.10 or later is supported.
+The package declares Python 3.10 or later in `pyproject.toml`. Current public CI runs on Python 3.12; other Python versions are outside its validation matrix. The synthetic-data checks do not require private market data, a GPU, or `quant-platform`.
 
 ```bash
 uv sync --locked --extra dev
