@@ -153,7 +153,7 @@ uv run --locked --extra dev research-code-quality --root . \
 
 The installed metrics CLI otherwise detects its root from its own module path, which can scan the environment rather than this repository. A zero-file scan is not evidence that this project's baseline passes.
 
-The 2026-10-12 audit found that the `a9fed81` inventory baseline predates four accepted scenario-contract and trial-accounting files and the worker-IPC preflight. With `--root .`, the current inventory is 227 Python files and 52,456 lines, compared with the recorded 223 files and 52,144 lines. The baseline records these additions so the ratchet measures future growth from the current checkout. This maintenance update does not change any function-size, file-size, long-line, or test-file limits; those structural metrics remain at their existing values. The exit condition is to reduce the file and line counts to the previous 223-file and 52,144-line budgets, then restore those inventory values in the baseline. The earlier implicit-root command returned a zero-file scan and must not be treated as a passing gate.
+The 2026-10-12 inventory refresh accepts four scenario-contract and trial-accounting files and the worker-IPC preflight. The baseline records 227 Python files and 52,456 lines as the starting inventory. This refresh changes only the file-count and line-count baselines; limits for function size, file size, long lines, test-file size, and complexity ignores remain unchanged. The quality workflow must pass `--root .` explicitly because the installed scanner can otherwise inspect its own environment and return an empty result. An empty scan is not evidence that the project passes the ratchet.
 
 ### Restricted test environments
 
