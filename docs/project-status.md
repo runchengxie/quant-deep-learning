@@ -1,6 +1,6 @@
 # Project Status
 
-This page records project facts verifiable from code, tests, or experiment artifacts as of 2026-08-29. Roadmaps describe research plans, while the experiment log preserves historical figures. This page summarizes status. When status changes, update it first and then check the root README and relevant topic documents.
+This page summarizes capabilities and research status reviewed on 2026-10-07. Numerical findings retain their experiment dates and sample periods; see the linked reports and experiment log for their evidence. Roadmaps describe research plans. When status changes, update this page first, then check the root README and relevant topic documents.
 
 ## Capabilities and progress
 
@@ -14,13 +14,14 @@ contract. No real-data training result is recorded; the older numerical findings
 below are unchanged. A published daily asset with verified VWAP, turnover units,
 and point-in-time adjustment factors is required before real training.
 
-| Track | Existing capability | Evidence at the status date | Status |
+| Track | Existing capability | Evidence and status reviewed 2026-10-07 | Status |
 |---|---|---|---|
 | FI-2010 reproduction | DeepLOB training, evaluation, text conversion, and tests | `src/ticknet/fi2010/` | Maintained separate research track |
 | Raw order book | raw-200 and raw-1000 shards, roughly 1M- and 100M-parameter models, multi-horizon labels, and inference | Controlled four-cell, three-seed Top-100 matrix complete | Candidate narrowed |
 | Minute aggregates | HGB, TCN, and GRU, rolling yearly evaluation, prediction audits, and cost evaluation | M3 v2 2025 H2 Rank IC was 0.06994; the formal cost matrix found no viable region | Formal conclusion recorded |
 | L2 event stream | Lossless three-stream packing, causal Transformer, training recovery, closing cache, frozen embeddings, joint fine-tuning, multi-task gradient audits, and label overlays | Keep z-score labels; last-position and tail-weighted supervision did not beat all-position supervision | Daily task-weight ablation next |
 | AgentX research loop | Proposals, critiques, allowlisted executors, registry, audits, comparisons, and locked-test approval | M0 through M3 complete; M4 and M5 trading-conversion diagnostics implemented | Training-mechanism ablations next |
+| Chip-layer research | Lagged cost/age summaries, paired price/chip/combined HGB comparisons, optional minute-feature fusion, and cost-evaluation artifacts | Synthetic engineering tests pass; no real-data training result is recorded | Awaiting a published daily asset with verified VWAP, turnover units, and point-in-time adjustment factors |
 
 Automated tests use synthetic data and cover FI-2010, next-day, minute, event-stream, and research-loop functionality. `scripts/smoke_test.py` checks the DeepLOB forward pass, gradients, parameter count, and FI-2010 dataset windows without real data.
 
