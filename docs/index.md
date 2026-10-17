@@ -11,9 +11,9 @@ Quant Deep Learning develops representations, models, training, inference, and r
 | Raw order book | Snapshot models over raw multi-level order-book inputs | A 1M-parameter, 200-step model remains a validation-stage candidate. Locked-test evaluation has not been triggered. |
 | Minute data | HGB, TCN, and GRU baselines with rolling evaluation and cost analysis | The current M3 v2 cost matrix is recorded as a formal research result. Its reported Rank IC does not establish positive net returns after the target transaction cost. |
 | L2 event stream | Lossless event packing and causal Transformer models | The 100M-parameter recent-fold runs show positive H5 OOS Rank IC across three seeds. Top-100 net returns remain a separate unresolved question. |
-| Chip-layer representations | Neural models over estimated market chip distributions | Proposed research track. No independent reproduction result is claimed here. |
+| Chip-layer representations | Lagged daily cost/age summaries with paired price, chip, and combined HGB comparisons | Engineering and synthetic tests are in place; real-data training awaits a published daily asset with verified VWAP, turnover units, and point-in-time adjustment factors. |
 
-Evidence summary above reflects the project status record dated 2026-08-29. Consult [Project status](project-status.md) for sample definitions, exact figures, caveats, and later updates before relying on a result.
+Evidence summary above reflects the project status record dated 2026-10-07. Consult [Project status](project-status.md) for sample definitions, exact figures, caveats, and later updates before relying on a result.
 
 ## Research workflow
 
