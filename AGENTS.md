@@ -45,8 +45,10 @@ uv run --locked --extra dev ruff check .
 uv run --locked --extra dev ruff format --check .
 uv run --locked --extra dev ty check
 uv run --locked --extra dev nbqa ruff --extend-ignore=E402,B018 .
+uv run --locked --extra dev research-code-quality --root . --scope src --scope scripts --scope tests --baseline docs/.code-quality-baseline.json --ratchet --json
 uv run --locked --extra dev pytest --cov --cov-report=term-missing
 uv run python scripts/smoke_test.py
+uv run --locked --extra dev python -m compileall -q src scripts
 cd web && npm ci && npm test && npm run build:pages
 ```
 
