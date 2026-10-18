@@ -87,8 +87,8 @@ jobs:
       - name: Run shared code-quality metrics
         run: uv run --locked --extra dev research-code-quality --root . --scope src --scope scripts --scope tests --baseline docs/.code-quality-baseline.json --ratchet --json
 
-      - name: Run tests with coverage
-        run: uv run --locked --extra dev pytest --cov --cov-report=term-missing
+      - name: Run tests with coverage and strict warnings
+        run: uv run --locked --extra dev pytest --cov --cov-report=term-missing -W error
 
       - name: Run synthetic model smoke checks
         run: uv run python scripts/smoke_test.py

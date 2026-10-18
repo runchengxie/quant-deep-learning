@@ -1,11 +1,26 @@
 """次日横截面评估指标测试。"""
 
+import warnings
 from datetime import date
 
 import numpy as np
 import pytest
 
 from ticknet.nextday.metrics import evaluate_predictions
+
+
+def test_balanced_accuracy_uses_present_true_classes_without_warning():
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        metrics = evaluate_predictions(
+            np.array([0, 0, 2, 2]),
+            np.eye(3)[[0, 1, 2, 1]],
+            np.array([-0.02, -0.01, 0.01, 0.02]),
+            [date(2024, 1, 3)] * 4,
+            min_symbols_per_day=4,
+        )
+    assert metrics["balanced_accuracy"] == pytest.approx(0.5)
+    assert metrics["per_class_recall"] == pytest.approx([0.5, 0.0, 0.5])
 
 
 def test_perfect_daily_ranking_has_unit_rank_ic():

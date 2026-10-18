@@ -98,6 +98,7 @@ max-complexity = 15
 pythonpath = ["src", "."]
 testpaths = ["tests"]
 addopts = ["--strict-config", "--strict-markers"]
+filterwarnings = ["error"]
 
 [tool.coverage.run]
 branch = true

@@ -1,7 +1,23 @@
 import importlib
+import sqlite3
+from contextlib import closing
+
+import pytest
 
 from tests.test_research import _spec
 from ticknet.research.registry import ExperimentRegistry
+
+
+def test_trial_accounting_closes_snapshot_connection(tmp_path, monkeypatch):
+    module = importlib.import_module("ticknet.research.trial_accounting")
+    with (
+        closing(ExperimentRegistry(tmp_path / "registry.sqlite")) as registry,
+        closing(sqlite3.connect(registry.database_path)) as connection,
+    ):
+        monkeypatch.setattr(module.sqlite3, "connect", lambda _path: connection)
+        module.export_trial_accounting(registry, family_by_experiment={})
+        with pytest.raises(sqlite3.ProgrammingError, match="closed database"):
+            connection.execute("SELECT 1")
 
 
 def test_export_counts_states_seeds_and_missing_families_without_artifacts(tmp_path):

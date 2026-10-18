@@ -1,16 +1,42 @@
 """分钟 TCN 模型与分钟分片数据集测试。"""
 
 import json
+import warnings
 
 import numpy as np
 import pytest
 import torch
 
 from ticknet.nextday.minute_tcn import (
+    CausalConv1d,
     MinuteShardDataset,
     build_minute_tcn,
 )
 from ticknet.nextday.splits import WalkForwardSplit
+
+
+def test_causal_convolution_preserves_legacy_checkpoint_without_deprecation():
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", FutureWarning)
+        model = CausalConv1d(2, 3, kernel_size=3, dilation=2)
+    direction = torch.arange(1, 19, dtype=torch.float32).reshape(3, 2, 3) / 20
+    magnitude = torch.tensor([0.5, 1.0, 1.5]).reshape(3, 1, 1)
+    bias = torch.tensor([0.1, -0.2, 0.3])
+    legacy = {"conv.bias": bias, "conv.weight_g": magnitude, "conv.weight_v": direction}
+    model.load_state_dict(legacy, strict=True)
+    x = torch.arange(20, dtype=torch.float32).reshape(1, 2, 10) / 20
+    weight = magnitude * direction / torch.linalg.vector_norm(direction, dim=(1, 2), keepdim=True)
+    expected = torch.nn.functional.conv1d(
+        torch.nn.functional.pad(x, (4, 0)), weight, bias, dilation=2
+    )
+    torch.testing.assert_close(model(x), expected)
+    saved = model.state_dict()
+    assert set(saved) == set(legacy)
+    for key, value in legacy.items():
+        torch.testing.assert_close(saved[key], value)
+    restored = CausalConv1d(2, 3, kernel_size=3, dilation=2)
+    restored.load_state_dict(saved, strict=True)
+    torch.testing.assert_close(restored(x), expected)
 
 
 def _write_minute_manifest(tmp_path, n_shards=2, samples_per_shard=3):

@@ -40,7 +40,7 @@ def main() -> None:
         ("ty type checks", [python, "-m", "ty", "check"]),
         (
             "pytest and coverage",
-            [python, "-m", "pytest", "--cov", "--cov-report=term-missing"],
+            [python, "-m", "pytest", "--cov", "--cov-report=term-missing", "-W", "error"],
         ),
         ("Synthetic smoke checks", [python, "scripts/smoke_test.py"]),
     )

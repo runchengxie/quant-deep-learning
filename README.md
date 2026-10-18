@@ -33,6 +33,8 @@ uv run python scripts/check.py
 
 The check script runs Ruff, formatting checks, `ty`, pytest with coverage, and synthetic DeepLOB/FI-2010 smoke checks. CI is the required quality gate; no Git hooks need to be installed. The full [development guide](docs/operations/development-guide.md) describes the test and data boundaries.
 
+Pytest treats unexpected warnings as errors in local runs and CI, including dependency deprecations and unclosed-resource warnings.
+
 On Windows PowerShell, activate the environment with `.\.venv\Scripts\Activate.ps1`. After changing command entry points in `pyproject.toml`, reinstall the project in editable mode so the environment's script launchers are refreshed.
 
 ## Documentation

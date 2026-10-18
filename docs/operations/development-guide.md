@@ -119,7 +119,7 @@ The smoke script checks the DeepLOB forward pass, softmax, gradients, parameter 
 
 ## Quality gates
 
-GitHub Actions runs the public quality gate on pull requests and pushes to `main`. It uses locked development dependencies to run Ruff, formatting, `ty`, pytest with coverage, and Python compilation. Pytest reports core-package branch coverage and fails below the configured 80% minimum, locally and in CI. Full training, slow tests, real-data checks, and GPU checks are run manually as needed.
+GitHub Actions runs the public quality gate on pull requests and pushes to `main`. It uses locked development dependencies to run Ruff, formatting, `ty`, pytest with coverage, and Python compilation. Pytest reports core-package branch coverage and fails below the configured 80% minimum, locally and in CI. Unexpected warnings also fail tests by default. Intentional warning cases must capture their expected warning or use a narrowly scoped test filter. Full training, slow tests, real-data checks, and GPU checks are run manually as needed.
 
 Run the local gate with:
 
@@ -133,7 +133,7 @@ The script first probes local multiprocessing IPC, then runs:
 ruff check .
 ruff format --check .
 ty check
-python -m pytest --cov --cov-report=term-missing
+python -m pytest --cov --cov-report=term-missing -W error
 python scripts/smoke_test.py
 ```
 
