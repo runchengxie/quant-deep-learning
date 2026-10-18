@@ -9,7 +9,7 @@ from datetime import date
 from typing import Any
 
 import numpy as np
-from sklearn.metrics import balanced_accuracy_score, matthews_corrcoef
+from sklearn.metrics import matthews_corrcoef
 
 from ticknet.dataset import NUM_CLASSES
 from ticknet.train import f1_metrics
@@ -68,7 +68,10 @@ def evaluate_predictions(
 
     predicted = probabilities.argmax(axis=1)
     metrics: dict[str, Any] = dict(f1_metrics(labels, predicted))
-    metrics["balanced_accuracy"] = float(balanced_accuracy_score(labels, predicted))
+    # Balanced accuracy averages recall over classes present in the targets.
+    metrics["balanced_accuracy"] = float(
+        np.mean([metrics["per_class_recall"][label] for label in np.unique(labels)])
+    )
     metrics["mcc"] = float(matthews_corrcoef(labels, predicted))
     one_hot = np.eye(NUM_CLASSES, dtype=np.float64)[labels]
     metrics["brier_score"] = float(np.mean(np.sum((probabilities - one_hot) ** 2, axis=1)))

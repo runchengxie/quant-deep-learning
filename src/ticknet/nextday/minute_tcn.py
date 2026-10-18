@@ -36,12 +36,26 @@ def _causal_pad(x: torch.Tensor, kernel_size: int, dilation: int) -> torch.Tenso
     return nn.functional.pad(x, (pad, 0))
 
 
+def _save_legacy_conv_weights(
+    _module: nn.Module,
+    state_dict: dict[str, torch.Tensor],
+    prefix: str,
+    _local_metadata: dict[str, Any],
+) -> None:
+    """Keep checkpoint keys readable by the original weight-normalized TCN."""
+    for legacy, current in (
+        ("weight_g", "parametrizations.weight.original0"),
+        ("weight_v", "parametrizations.weight.original1"),
+    ):
+        state_dict[prefix + legacy] = state_dict.pop(prefix + current)
+
+
 class CausalConv1d(nn.Module):
     """带膨胀的因果一维卷积，保证输出第 t 位只看输入 0..t。"""
 
     def __init__(self, in_channels: int, out_channels: int, kernel_size: int, dilation: int):
         super().__init__()
-        self.conv = nn.utils.weight_norm(
+        self.conv = nn.utils.parametrizations.weight_norm(
             nn.Conv1d(
                 in_channels,
                 out_channels,
@@ -50,6 +64,7 @@ class CausalConv1d(nn.Module):
                 padding=0,
             )
         )
+        self.conv.register_state_dict_post_hook(_save_legacy_conv_weights)
         self.kernel_size = kernel_size
         self.dilation = dilation
 
