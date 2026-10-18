@@ -121,6 +121,8 @@ The smoke script checks the DeepLOB forward pass, softmax, gradients, parameter 
 
 GitHub Actions runs the public quality gate on pull requests and pushes to `main`. It uses locked development dependencies to run Ruff, formatting, `ty`, pytest with coverage, and Python compilation. Pytest reports core-package branch coverage and fails below the configured 80% minimum, locally and in CI. Unexpected warnings also fail tests by default. Intentional warning cases must capture their expected warning or use a narrowly scoped test filter. Full training, slow tests, real-data checks, and GPU checks are run manually as needed.
 
+`tests/test_generator_model.py` always tests a small synthetic Transformer checkpoint round trip, forward pass, and model-backed order generation on CPU. These checks establish integration behavior only. Two additional smoke tests need a local historical capacity100m checkpoint and skip when it is unavailable. Set `TICKNET_GENERATOR_CHECKPOINT` to an external checkpoint path to run them; an explicitly configured missing file fails. The historical relative artifact path remains a compatibility fallback. The loader in this test assumes the capacity100m attention layout and does not establish arbitrary checkpoint compatibility or trading quality.
+
 Run the local gate with:
 
 ```bash

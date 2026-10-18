@@ -1,11 +1,8 @@
-"""RED: generator 真实模型接入。
-
-加载 eventstream 100M 权重到 L2FoundationModel，前向生成下一事件，
-转为 BackgroundOrder。无 GPU 时用 CPU 加载（权重约 400MB，可用）。
-"""
+"""Synthetic model integration and optional local capacity100m checkpoint smoke tests."""
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
@@ -20,20 +17,56 @@ CHECKPOINT = (
     "eventstream-top400-h5-capacity100m-recent.seed0.last.pt"
 )
 
-if not Path(CHECKPOINT).exists():
-    pytest.skip("需要本地 eventstream 100M checkpoint，CI 环境不提供", allow_module_level=True)
+
+@pytest.fixture
+def real_checkpoint() -> Path:
+    configured = os.environ.get("TICKNET_GENERATOR_CHECKPOINT")
+    path = Path(configured or CHECKPOINT)
+    if not path.is_file():
+        if configured:
+            pytest.fail(f"Configured generator checkpoint is not a file: {path}")
+        pytest.skip(
+            "Optional local capacity100m checkpoint unavailable; set TICKNET_GENERATOR_CHECKPOINT"
+        )
+    return path
+
+
+@pytest.fixture
+def synthetic_model(tmp_path) -> L2FoundationModel:
+    torch.manual_seed(17)
+    config = ModelConfig(d_model=32, n_layers=1, n_heads=4, d_ff=64, max_seq=32)
+    original = L2FoundationModel(config).eval()
+    checkpoint = tmp_path / "synthetic.pt"
+    torch.save({"model": original.state_dict()}, checkpoint)
+    restored = L2FoundationModel(config).eval()
+    restored.load_state_dict(torch.load(checkpoint, weights_only=True)["model"], strict=True)
+    batch = _dummy_batch()
+    with torch.no_grad():
+        torch.testing.assert_close(restored(*batch)["reg"], original(*batch)["reg"], rtol=0, atol=0)
+    return restored
+
+
+def test_synthetic_checkpoint_forward(synthetic_model):
+    with torch.no_grad():
+        output = synthetic_model(*_dummy_batch())
+    assert output["reg"].shape == (1, 8, 3)
+    assert torch.isfinite(output["reg"]).all()
+
+
+def test_synthetic_checkpoint_generates_orders(synthetic_model):
+    _assert_model_orders(synthetic_model)
 
 
 def _dummy_batch(seq_len: int = 8) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """构造随机但合法的输入张量（仅用于验证前向通路，不代表真实分布）。"""
+    """Create legal synthetic inputs without claiming a realistic market distribution."""
     x = torch.randn(1, seq_len, 80, dtype=torch.float32)
     sid = torch.randint(0, 3, (1, seq_len))
     oid = torch.randint(0, 6, (1, seq_len))
     return x, sid, oid
 
 
-def test_load_real_checkpoint_and_forward():
-    sd = torch.load(CHECKPOINT, map_location="cpu", weights_only=False)
+def test_load_real_checkpoint_and_forward(real_checkpoint):
+    sd = torch.load(real_checkpoint, map_location="cpu", weights_only=False)
     model = L2FoundationModel(ModelConfig(**_cfg_from_state(sd["model"])))
     model.load_state_dict(sd["model"], strict=True)
     model.eval()
@@ -45,12 +78,16 @@ def test_load_real_checkpoint_and_forward():
     assert out["reg"].shape == (1, 8, 3)
 
 
-def test_generator_model_mode_produces_orders():
-    sd = torch.load(CHECKPOINT, map_location="cpu", weights_only=False)
+def test_generator_model_mode_produces_orders(real_checkpoint):
+    sd = torch.load(real_checkpoint, map_location="cpu", weights_only=False)
     model = L2FoundationModel(ModelConfig(**_cfg_from_state(sd["model"])))
     model.load_state_dict(sd["model"], strict=True)
     model.eval()
 
+    _assert_model_orders(model)
+
+
+def _assert_model_orders(model):
     gen = OrderGenerator(model=model, stub=False)
     ctx = GenerationContext(
         initial_bid=(1000, 500),
@@ -69,10 +106,10 @@ def test_generator_model_mode_produces_orders():
 
 
 def _cfg_from_state(state: dict) -> dict:
-    """从 state_dict key 推断容量配置（blocks 数 / d_model）。"""
+    """Infer the historical capacity100m layout, whose attention head dimension is 64."""
     n_layers = sum(1 for k in state if k.startswith("blocks.") and k.endswith("norm1.weight"))
     d_model = state["feat_proj.0.weight"].shape[0]
-    n_heads = d_model // 64  # capacity100m 用 d_head=64
+    n_heads = d_model // 64  # The optional real-checkpoint test targets capacity100m only.
     return {
         "d_model": d_model,
         "n_layers": n_layers,
