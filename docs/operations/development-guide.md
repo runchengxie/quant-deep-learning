@@ -153,7 +153,9 @@ uv run --locked --extra dev research-code-quality --root . \
 
 The installed metrics CLI otherwise detects its root from its own module path, which can scan the environment rather than this repository. A zero-file scan is not evidence that this project's baseline passes.
 
-The 2026-10-12 inventory refresh accepts four scenario-contract and trial-accounting files and the worker-IPC preflight. The baseline records 227 Python files and 52,456 lines as the starting inventory. This refresh changes only the file-count and line-count baselines; limits for function size, file size, long lines, test-file size, and complexity ignores remain unchanged. The quality workflow must pass `--root .` explicitly because the installed scanner can otherwise inspect its own environment and return an empty result. An empty scan is not evidence that the project passes the ratchet.
+The baseline separates inventory from blocking budgets. Total Python lines remain visible in the scanner's JSON output and the baseline's historical `inventory` record. Line growth alone does not fail CI. Python file count, function size, file size, long lines, test-file size, and complexity ignores retain their existing budgets. Ruff complexity and the 80% coverage minimum also remain blocking checks.
+
+The historical inventory records 227 Python files and 52,456 lines at the 2026-10-12 refresh. The 2026-10-18 policy moves only `python_lines` out of the blocking `metrics` object; it does not refresh any debt budget. The shared scanner already supports comparing only metrics recorded in that object. Review generated baselines before committing them: `--write-baseline` includes every scalar metric and would make line count blocking again. An empty scan is not evidence that the project passes the ratchet.
 
 ### Restricted test environments
 

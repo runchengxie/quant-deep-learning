@@ -5,9 +5,11 @@
     "scripts",
     "tests"
   ],
+  "inventory": {
+    "python_lines": 52456
+  },
   "metrics": {
     "python_files": 227,
-    "python_lines": 52456,
     "long_lines_over_100": 0,
     "functions_over_100": 40,
     "functions_over_250": 1,

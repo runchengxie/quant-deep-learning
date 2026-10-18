@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
+import subprocess
+import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
@@ -175,6 +178,43 @@ def test_migration_pointer_is_removed_and_quality_baseline_lives_in_docs() -> No
     assert baseline.is_file()
     assert "research-code-quality --root ." in workflow
     assert "--baseline docs/.code-quality-baseline.json" in workflow
+
+
+@pytest.mark.parametrize("overlong_line", [False, True])
+def test_maintainability_policy_reports_line_growth_and_blocks_long_lines(
+    tmp_path: Path, overlong_line: bool
+) -> None:
+    source = tmp_path / "src"
+    source.mkdir()
+    for index in range(70):
+        (source / f"part_{index}.py").write_text("value = 1\n" * 750, encoding="utf-8")
+    if overlong_line:
+        (source / "part_0.py").write_text("value = '" + "x" * 101 + "'\n", encoding="utf-8")
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "research_code_quality.scanner",
+            "--root",
+            str(tmp_path),
+            "--scope",
+            "src",
+            "--no-git",
+            "--ratchet",
+            "--baseline",
+            str(ROOT / "docs/.code-quality-baseline.json"),
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if overlong_line:
+        assert result.returncode == 1
+        assert "long_lines_over_100" in result.stderr
+    else:
+        assert result.returncode == 0, result.stderr
+        assert json.loads(result.stdout)["python_lines"] == 52_500
 
 
 def test_fi2010_reproduction_is_a_first_party_package() -> None:
