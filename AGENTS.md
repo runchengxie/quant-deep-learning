@@ -46,13 +46,15 @@ uv run --locked --extra dev ruff format --check .
 uv run --locked --extra dev ty check
 uv run --locked --extra dev nbqa ruff --extend-ignore=E402,B018 .
 uv run --locked --extra dev research-code-quality --root . --scope src --scope scripts --scope tests --baseline docs/.code-quality-baseline.json --ratchet --json
-uv run --locked --extra dev pytest --cov --cov-report=term-missing
+uv run --locked --extra dev pytest --cov --cov-report=term-missing -W error
 uv run python scripts/smoke_test.py
 uv run --locked --extra dev python -m compileall -q src scripts
 cd web && npm ci && npm test && npm run build:pages
 ```
 
 CI is the required quality gate. Do not install local Git hooks. The CI hygiene check validates changed files for size, conflict markers, JSON/TOML/YAML syntax, private-key markers, trailing whitespace, and final newlines. `scripts/check.py` remains a manual shortcut for the Python checks.
+
+Pytest treats unexpected warnings as errors by default, both locally and in CI. Tests that deliberately exercise a warning must capture it or use a narrowly scoped existing filter.
 
 The public synthetic-data CI workflow runs file hygiene, Ruff, formatting, `ty`, notebook lint, pytest with coverage, the shared code-quality ratchet, smoke checks, and Python compilation on pull requests and pushes to `main`. The separate `pages.yml` workflow runs frontend tests and the static site build. It requires no private credentials, real market data, or GPU. Full training, slow tests, and GPU checks remain manual or on demand. Python 3.10 compatibility and dependency security are outside this workflow. Validate them in Python 3.10 when a change creates a relevant risk.
 
