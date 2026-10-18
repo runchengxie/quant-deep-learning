@@ -5,6 +5,7 @@ from __future__ import annotations
 import sqlite3
 from collections import Counter
 from collections.abc import Mapping
+from contextlib import closing
 from typing import Any
 
 from ticknet.research.registry import ExperimentRegistry
@@ -17,7 +18,7 @@ def export_trial_accounting(
         not isinstance(value, str) or not value.strip() for value in family_by_experiment.values()
     ):
         raise ValueError("family identifiers must be nonempty strings")
-    with sqlite3.connect(registry.database_path) as connection:
+    with closing(sqlite3.connect(registry.database_path)) as connection:
         connection.row_factory = sqlite3.Row
         connection.execute("BEGIN")
         experiments = connection.execute(

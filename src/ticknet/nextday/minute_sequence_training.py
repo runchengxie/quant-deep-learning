@@ -83,6 +83,7 @@ def make_minute_dataloaders(
             num_workers=config.num_workers,
             pin_memory=device.type == "cuda",
             persistent_workers=config.num_workers > 0,
+            multiprocessing_context="spawn" if config.num_workers > 0 else None,
         )
         for index, dataset in enumerate(datasets)
     ]

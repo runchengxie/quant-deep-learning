@@ -102,5 +102,10 @@ def test_minute_tcn_training_supports_worker_loading(tmp_path):
     )
     loaders = make_tcn_dataloaders(config, device=torch.device("cpu"))
     assert all(loader.num_workers == 1 and loader.persistent_workers for loader in loaders)
+    assert all(
+        loader.multiprocessing_context is not None
+        and loader.multiprocessing_context.get_start_method() == "spawn"
+        for loader in loaders
+    )
     result = train(config)
     assert result["samples"]["train"] > 0
