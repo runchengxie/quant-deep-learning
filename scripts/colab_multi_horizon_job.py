@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import sys
 import threading
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any, Protocol
@@ -764,7 +764,7 @@ def _checkpoint_sync_loop(
 @contextmanager
 def _periodic_eventstream_checkpoint_sync(
     spec: dict[str, Any], env: dict[str, str]
-) -> Iterator[None]:
+) -> Generator[None, None, None]:
     if spec["workflow"] not in EVENTSTREAM_TRAIN_WORKFLOWS:
         yield
         return

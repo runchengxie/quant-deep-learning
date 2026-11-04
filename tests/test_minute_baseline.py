@@ -212,7 +212,9 @@ def test_trailing_minute_matrix_matches_sequence_path() -> None:
     minutes = np.asarray([10, 11, 12], dtype=np.int64)
     matrix = np.asarray([[1.0], [2.0], [3.0]], dtype=np.float32)
     contiguous, contiguous_count = trailing_minute_matrix(MinuteRows(minutes, matrix), 2)
-    sequence, sequence_count = trailing_minute_matrix(list(zip(minutes, matrix, strict=True)), 2)
+    sequence, sequence_count = trailing_minute_matrix(
+        [(int(minute), row) for minute, row in zip(minutes, matrix, strict=True)], 2
+    )
     assert contiguous_count == sequence_count == 2
     np.testing.assert_array_equal(contiguous, sequence)
 

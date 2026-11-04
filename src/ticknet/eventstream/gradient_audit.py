@@ -272,11 +272,11 @@ def _distribution(values: list[float | None]) -> dict[str, Any]:
         "count": int(finite.size),
         "mean": float(finite.mean()),
         "std": float(finite.std(ddof=1)) if finite.size > 1 else 0.0,
-        "min": float(finite.min()),
+        "min": float(np.min(finite)),
         "q25": float(np.quantile(finite, 0.25)),
         "median": float(np.median(finite)),
         "q75": float(np.quantile(finite, 0.75)),
-        "max": float(finite.max()),
+        "max": float(np.max(finite)),
         "negative_fraction": float((finite < 0).mean()),
     }
 

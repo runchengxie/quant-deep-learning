@@ -5,7 +5,7 @@ import json
 import re
 import subprocess
 import sys
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -305,7 +305,7 @@ def test_local_quality_gate_closes_ipc_probe_before_running_checks(
     events: list[str] = []
 
     @contextmanager
-    def listener() -> Iterator[None]:
+    def listener() -> Generator[None, None, None]:
         events.append("open")
         yield
         events.append("close")
