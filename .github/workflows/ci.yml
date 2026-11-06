@@ -102,8 +102,6 @@ jobs:
   signal-acceptance:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/signal-acceptance
     steps:
       - name: Check out producer
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -114,4 +112,6 @@ jobs:
           enable-cache: true
           python-version: "3.12"
       - name: Accept synthetic signals with installed pinned platform replay
+        env:
+          UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/signal-acceptance
         run: uv run --project integration/signal-acceptance --locked pytest -c integration/signal-acceptance/pyproject.toml integration/signal-acceptance -q
