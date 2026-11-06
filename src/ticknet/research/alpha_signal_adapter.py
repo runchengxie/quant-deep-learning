@@ -164,7 +164,11 @@ def export_alpha_signal_artifact(
     """校验 formal artifact 并写出 alpha-research signal parquet。"""
     source = Path(predictions_path).resolve()
     output = Path(output_path)
-    if source in {output.resolve(), output.with_suffix(".manifest.json").resolve()}:
+    targets = (output, output.with_suffix(".manifest.json"))
+    if any(
+        target.resolve() == source or (target.exists() and target.samefile(source))
+        for target in targets
+    ):
         raise ValueError("Signal output or manifest must not overwrite source predictions")
     report = validate_formal_prediction_artifact(
         predictions_path, expected_universe_size=expected_universe_size

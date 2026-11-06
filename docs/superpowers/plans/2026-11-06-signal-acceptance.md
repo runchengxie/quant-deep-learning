@@ -50,3 +50,5 @@ Files: `integration/signal-acceptance/{pyproject.toml,uv.lock,ty.toml,test_signa
 - Ruling: keep receipt functions in the existing adapter and tests in its existing test module to preserve the file-count ratchet; no baseline budgets changed.
 - Ruling: constrain only the optional diagnostic to pandas 2 and NumPy <2.4 after real replay exposed provider/pandas deprecations with pandas 3.1 and NumPy 2.5; warnings remain errors.
 - Validation logs and task environments are external to this repository. Final full-suite and CI results are reported with the reviewed revision.
+- Final review: fixed deterministic source overwrite through existing hard links for either output or sidecar; both regression cases failed before file-identity guards were added. Also corrected two optional integration test annotations exposed by the separate type check.
+- Final review scope: production publication, model profitability, concurrent output writers, adversarial replacement of both receipt and artifact, and other provider revisions remain outside this synthetic diagnostic. Standalone additions preserve Python 3.10 syntax; this task does not claim a Python 3.10 runtime test.

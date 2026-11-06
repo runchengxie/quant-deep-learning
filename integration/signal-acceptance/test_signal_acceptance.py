@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from importlib.metadata import distribution
 from pathlib import Path
+from typing import cast
 
 import pandas as pd
 import pyarrow as pa
@@ -79,7 +80,7 @@ def test_export_to_installed_platform_native_replay(tmp_path: Path) -> None:
             for day, price in [("2026-01-09", 1.0), ("2026-01-12", 100.0), ("2026-01-13", 110.0)]
             for symbol in ["AAA", "BBB", "CCC", "DDD"]
         ],
-        columns=["trade_date", "symbol", "open"],
+        columns=pd.Index(["trade_date", "symbol", "open"]),
     )
     pricing["trade_date"] = pd.to_datetime(pricing["trade_date"])
     positions = build_positions_by_rebalance(
@@ -87,7 +88,7 @@ def test_export_to_installed_platform_native_replay(tmp_path: Path) -> None:
         pred_col="signal_backtest",
         price_col="open",
         top_k=1,
-        rebalance_dates=[pd.Timestamp("2026-01-09")],
+        rebalance_dates=[cast(pd.Timestamp, pd.Timestamp(year=2026, month=1, day=9))],
         shift_days=1,
         pricing_data=pricing,
     )

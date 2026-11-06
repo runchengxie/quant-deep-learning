@@ -163,3 +163,17 @@ def test_export_rejects_overwriting_source(tmp_path: Path, source_is_manifest: b
     with pytest.raises(ValueError, match="overwrite"):
         export_alpha_signal_artifact(source, target, expected_universe_size=2)
     assert source.read_bytes() == before
+
+
+@pytest.mark.parametrize("alias_is_manifest", [False, True])
+def test_export_rejects_hard_link_to_source(tmp_path: Path, alias_is_manifest: bool) -> None:
+    source, _output, _ = _export(tmp_path)
+    target = tmp_path / "linked.parquet"
+    alias = target.with_suffix(".manifest.json") if alias_is_manifest else target
+    alias.hardlink_to(source)
+    before = source.read_bytes()
+    with pytest.raises(ValueError, match="overwrite"):
+        export_alpha_signal_artifact(source, target, expected_universe_size=2)
+    assert source.read_bytes() == before
+    if alias_is_manifest:
+        assert not target.exists()
