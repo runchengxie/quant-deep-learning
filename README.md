@@ -28,10 +28,12 @@ The package declares Python 3.10 or later in `pyproject.toml`. Current public CI
 
 ```bash
 uv sync --locked --extra dev
-uv run python scripts/check.py
+uv run --locked --extra dev python scripts/check.py
 ```
 
 The check script runs Ruff, formatting checks, `ty`, pytest with coverage, and synthetic DeepLOB/FI-2010 smoke checks. CI is the required quality gate; no Git hooks need to be installed. The full [development guide](docs/operations/development-guide.md) describes the test and data boundaries.
+
+uv selects CPU PyTorch by default. Linux CUDA training uses the explicit `gpu` group in a separate environment; see [CPU and GPU environments](docs/operations/development-guide.md#cpu-and-gpu-environments) for sync and run commands. An ordinary uv command selects CPU again.
 
 Pytest treats unexpected warnings as errors in local runs and CI, including dependency deprecations and unclosed-resource warnings.
 

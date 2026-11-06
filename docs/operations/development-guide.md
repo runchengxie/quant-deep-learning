@@ -1,5 +1,29 @@
 # Development and Maintenance
 
+## CPU and GPU environments
+
+Use the CI-tested uv version (0.13.7) for these commands. The default `cpu` dependency group selects CPU PyTorch on Linux and Windows; macOS keeps its supported PyPI build. Published package metadata still requires `torch`: these source selections are uv development settings, not optional model APIs.
+
+```bash
+uv sync --locked --extra dev
+uv run --locked --extra dev python scripts/check.py
+```
+
+The `gpu` group preserves the existing PyPI graph and provides CUDA builds on Linux; it does not configure CUDA on Windows or macOS. Other accelerators are outside this profile's validation; see the [uv PyTorch guide](https://docs.astral.sh/uv/guides/integration/pytorch/).
+
+Ordinary locked sync/run commands keep the CPU selection. The `cpu` and `gpu` groups are mutually exclusive. For GPU work, set `GPU_ENV` to a separate, absolute environment directory outside the source checkout. On Linux, use a Linux filesystem for environments and builds; a mounted NTFS data volume is not an equivalent build filesystem. Retained research artifacts still follow the project's data contract.
+
+In Bash, scope the environment location to each command:
+
+```bash
+: "${GPU_ENV:?Set GPU_ENV to a separate absolute environment directory}"
+UV_PROJECT_ENVIRONMENT="$GPU_ENV" uv sync --locked --extra dev --no-group cpu --group gpu
+UV_PROJECT_ENVIRONMENT="$GPU_ENV" uv run --locked --no-group cpu --group gpu \
+  python -c "import torch; print(torch.__version__, torch.version.cuda, torch.cuda.is_available())"
+```
+
+Use `--no-group cpu --group gpu` for every GPU sync/run; selecting it once does not change the project default. A bare uv command selects CPU even when pointed at a GPU environment, so keep the two environment locations separate. These settings choose installed packages; choose the training device separately in the training configuration. GPU driver/hardware compatibility and real-data training remain separate checks. A successful package resolution is not evidence that CUDA is available on a host.
+
 ## Module boundaries
 
 The core package uses the standard `src` layout:

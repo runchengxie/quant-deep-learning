@@ -109,8 +109,31 @@ fail_under = 80
 show_missing = true
 skip_covered = true
 
+[dependency-groups]
+cpu = ["torch>=2.0"]
+gpu = ["torch>=2.0"]
+
+[tool.uv]
+default-groups = ["cpu"]
+conflicts = [[{ group = "cpu" }, { group = "gpu" }]]
+
 [tool.uv.sources]
 research-code-quality = { git = "https://github.com/runchengxie/research-code-quality.git", rev = "76a869e4f7982a456e4807f454815d6aa027d712" }
+torch = [
+    { index = "pytorch-cpu", group = "cpu", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+    { index = "pypi", group = "cpu", marker = "sys_platform != 'linux' and sys_platform != 'win32'" },
+    { index = "pypi", group = "gpu" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+default = true
 
 [[tool.ty.overrides]]
 include = ["src/ticknet/research/agents/client.py"]

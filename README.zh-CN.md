@@ -28,10 +28,12 @@ FI-2010 DeepLOB 论文复现在 `ticknet.fi2010` 中独立维护，不能证明�
 
 ```bash
 uv sync --locked --extra dev
-uv run python scripts/check.py
+uv run --locked --extra dev python scripts/check.py
 ```
 
 脚本运行 Ruff、格式检查、`ty`、pytest 覆盖率和合成 DeepLOB/FI-2010 冒烟检查。CI 是必需门禁，无需安装 Git hook。完整检查范围见[开发指南](docs/operations/development-guide.md)。
+
+uv 默认安装 CPU 版 PyTorch。Linux CUDA 训练需要显式选择 `gpu` 依赖组，并使用独立环境；同步和运行命令见[CPU 与 GPU 环境](docs/operations/development-guide.md#cpu-and-gpu-environments)。不带后端选项的 uv 命令会重新选择 CPU。
 
 pytest 在本地和 CI 中都会将未预期的警告视为错误，包括依赖弃用和资源未关闭的警告。
 

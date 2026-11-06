@@ -2,18 +2,25 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
+import shutil
 import subprocess
 import sys
 from collections.abc import Generator
 from contextlib import contextmanager
+from importlib.metadata import requires
 from pathlib import Path
 
 import pytest
+import tomli
+from packaging.markers import Marker, default_environment
+from packaging.requirements import Requirement
 
 from scripts import check as local_checks
 
 ROOT = Path(__file__).resolve().parents[1]
+GPU_REQUIREMENTS = ("nvidia-", "cuda-", "triton==")
 MARKDOWN_LINK = re.compile(r"(?<!!)\[([^\]]+)\]\(([^)]+)\)")
 INLINE_CODE = re.compile(r"`[^`\n]*`")
 ARCHIVAL_SOURCE_START = "<!-- archival-source:start -->"
@@ -84,6 +91,8 @@ ENGLISH_DOCUMENTS = {
     "docs/superpowers/specs/2026-10-05-quant-deep-learning-reorganization-design.md",
     "docs/superpowers/specs/2026-10-06-quant-deep-learning-independent-research-site-design.md",
     "docs/superpowers/plans/2026-10-06-independent-research-site-astro-and-ci.md",
+    "docs/superpowers/plans/2026-11-06-cpu-default-development.md",
+    "docs/superpowers/specs/2026-11-06-cpu-default-development-design.md",
     "docs/superpowers/specs/2026-08-26-market-simulator-design.md",
 }
 
@@ -318,3 +327,90 @@ def test_local_quality_gate_closes_ipc_probe_before_running_checks(
     monkeypatch.setattr(local_checks.subprocess, "run", run)
     local_checks.main()
     assert events == ["open", "close", "run", "run", "run", "run", "run"]
+
+
+def _export_environment_requirements(
+    tmp_path: Path, *selection: str
+) -> subprocess.CompletedProcess[str]:
+    uv = shutil.which("uv")
+    assert uv is not None, "uv is required for the locked environment selection checks"
+    environment = {**os.environ, "UV_CACHE_DIR": str(tmp_path / "uv-cache")}
+    return subprocess.run(
+        [
+            uv,
+            "export",
+            "--locked",
+            "--offline",
+            "--extra",
+            "dev",
+            "--no-emit-project",
+            "--no-hashes",
+            *selection,
+        ],
+        cwd=ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def _requirement_lines(result: subprocess.CompletedProcess[str]) -> list[str]:
+    assert result.returncode == 0, result.stderr
+    return [
+        line.strip() for line in result.stdout.splitlines() if line and not line.startswith("#")
+    ]
+
+
+def test_default_locked_environment_uses_cpu_torch(tmp_path: Path) -> None:
+    requirements = _requirement_lines(_export_environment_requirements(tmp_path))
+
+    assert any(line.startswith("torch==") and "+cpu" in line for line in requirements)
+    assert not any(line.startswith(GPU_REQUIREMENTS) for line in requirements)
+
+
+def test_explicit_gpu_environment_preserves_cuda_dependencies(tmp_path: Path) -> None:
+    requirements = _requirement_lines(
+        _export_environment_requirements(tmp_path, "--no-group", "cpu", "--group", "gpu")
+    )
+
+    assert any(line.startswith("torch==") for line in requirements)
+    assert not any(line.startswith("torch==") and "+cpu" in line for line in requirements)
+    assert any(line.startswith("nvidia-") for line in requirements)
+    assert any(line.startswith("triton==") for line in requirements)
+
+
+def test_cpu_and_gpu_groups_cannot_be_selected_together(tmp_path: Path) -> None:
+    result = _export_environment_requirements(tmp_path, "--group", "cpu", "--group", "gpu")
+
+    assert result.returncode != 0
+    assert "conflict" in result.stderr.lower()
+
+
+def test_installed_package_keeps_torch_mandatory() -> None:
+    requirements = [Requirement(line) for line in requires("quant-deep-learning") or []]
+
+    assert any(item.name == "torch" and item.marker is None for item in requirements)
+
+
+@pytest.mark.parametrize("python_version", ["3.10.22", "3.12.16"])
+def test_default_cpu_keeps_macos_pypi_source(tmp_path: Path, python_version: str) -> None:
+    result = _export_environment_requirements(tmp_path, "--format", "pylock.toml")
+    assert result.returncode == 0, result.stderr
+    environment = {
+        **default_environment(),
+        "python_full_version": python_version,
+        "python_version": ".".join(python_version.split(".")[:2]),
+        "sys_platform": "darwin",
+        "platform_system": "Darwin",
+        "platform_machine": "arm64",
+        "os_name": "posix",
+    }
+    selected = [
+        package
+        for package in tomli.loads(result.stdout)["packages"]
+        if package["name"] == "torch" and Marker(package["marker"]).evaluate(environment)
+    ]
+
+    assert len(selected) == 1
+    assert selected[0]["index"] == "https://pypi.org/simple"
