@@ -32,7 +32,7 @@ No direct Python dependency or repository import is required along these boundar
 
 ## Current implementation status
 
-This repository owns its model-specific training, inference, and evaluation code. It already has an alpha-signal export adapter, but a stable cross-repository prediction, signal, and model-manifest schema is still being specified. Until that contract is implemented and verified by both producer and consumer, treat existing copies in other repositories as migration-era implementations and do not assume wire compatibility.
+This repository owns its model-specific training, inference, and evaluation code. Its alpha-signal export adapter now has a versioned integrity receipt and a [synthetic installed-consumer acceptance](signal-acceptance.md). A broader prediction and model/checkpoint manifest is still being specified. Until that contract is implemented and verified by both producer and consumer, treat existing copies in other repositories as migration-era implementations and do not assume wire compatibility.
 
 The market-data platform remains the source for shared published data. Do not copy provider ingestion, credentials, raw market data, or consumer runtime state into this repository. Store experiment data and checkpoints outside Git under the configured project data root.
 

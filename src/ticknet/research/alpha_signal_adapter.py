@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
@@ -12,6 +13,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from ticknet.research.prediction_contract import validate_formal_prediction_artifact
+from ticknet.research.registry import file_sha256
 
 ALPHA_SIGNAL_COLUMNS = (
     "signal_date",
@@ -77,6 +79,7 @@ def build_alpha_signal_table(
         raise ValueError("model_version 和 feature_set_id 不能为空")
 
     rows: list[dict[str, Any]] = []
+    seen: set[tuple[date, str]] = set()
     for index, row in enumerate(predictions.to_pylist()):
         trading_date = _as_date(row["trading_date"], field="trading_date")
         label_date = _as_date(row["label_date"], field="label_date")
@@ -88,7 +91,13 @@ def build_alpha_signal_table(
         symbol = str(row["symbol"]).strip()
         if not symbol:
             raise ValueError(f"row {index} symbol 不能为空")
+        key = (trading_date, symbol)
+        if key in seen:
+            raise ValueError(f"duplicate signal key: {key}")
+        seen.add(key)
         score = float(row["score"])
+        if not math.isfinite(score):
+            raise ValueError(f"row {index} score must be finite")
         can_buy = _as_bool(row["can_buy"], field="can_buy")
         in_universe = _as_bool(row["in_universe"], field="in_universe")
         rows.append(
@@ -153,6 +162,10 @@ def export_alpha_signal_artifact(
     expected_universe_size: int = 400,
 ) -> dict[str, Any]:
     """校验 formal artifact 并写出 alpha-research signal parquet。"""
+    source = Path(predictions_path).resolve()
+    output = Path(output_path)
+    if source in {output.resolve(), output.with_suffix(".manifest.json").resolve()}:
+        raise ValueError("Signal output or manifest must not overwrite source predictions")
     report = validate_formal_prediction_artifact(
         predictions_path, expected_universe_size=expected_universe_size
     )
@@ -165,7 +178,14 @@ def export_alpha_signal_artifact(
         eligible_for_live=eligible_for_live,
     )
     pq.write_table(table, output)
+    manifest_path = write_alpha_signal_manifest(
+        output,
+        source_report=report.to_dict(),
+        model_version=model_version,
+        feature_set_id=feature_set_id,
+    )
     return {
+        "manifest_path": str(manifest_path.resolve()),
         "artifact_type": "alpha_research.signals",
         "schema_version": 1,
         "path": str(output.resolve()),
@@ -202,3 +222,64 @@ def main(argv: list[str] | None = None) -> int:
 
 
 __all__ = ["ALPHA_SIGNAL_COLUMNS", "build_alpha_signal_table", "export_alpha_signal_artifact"]
+
+
+MANIFEST_CONTRACT = "ticknet.alpha-signal-manifest.v1"
+
+
+def write_alpha_signal_manifest(
+    output: Path, *, source_report: dict[str, Any], model_version: str, feature_set_id: str
+) -> Path:
+    """Persist an additive receipt beside the signal, without future-label values."""
+    manifest = {
+        "contract": MANIFEST_CONTRACT,
+        "signal_sha256": file_sha256(output),
+        "source_prediction_sha256": source_report["sha256"],
+        "dataset_fingerprint": source_report["dataset_fingerprint"],
+        "model_version": model_version,
+        "feature_set_id": feature_set_id,
+        "rows": source_report["row_count"],
+        "signal_date_semantics": "trading_date",
+    }
+    path = output.with_suffix(".manifest.json")
+    path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
+def verify_alpha_signal_artifact(
+    path: str | Path,
+    *,
+    expected_source_sha256: str,
+    expected_model_version: str,
+    expected_feature_set_id: str,
+    expected_dataset_fingerprint: str,
+) -> dict[str, Any]:
+    """Verify bytes and expected identities before passing a signal to a consumer."""
+    output = Path(path)
+    manifest = json.loads(output.with_suffix(".manifest.json").read_text(encoding="utf-8"))
+    if not isinstance(manifest, dict) or manifest.get("contract") != MANIFEST_CONTRACT:
+        raise ValueError("Unsupported alpha signal manifest contract")
+    expected = {
+        "source_prediction_sha256": expected_source_sha256,
+        "model_version": expected_model_version,
+        "feature_set_id": expected_feature_set_id,
+        "dataset_fingerprint": expected_dataset_fingerprint,
+        "signal_date_semantics": "trading_date",
+    }
+    if any(not value.strip() or manifest.get(key) != value for key, value in expected.items()):
+        raise ValueError("Alpha signal identity mismatch")
+    if file_sha256(output) != manifest.get("signal_sha256"):
+        raise ValueError("Alpha signal digest mismatch")
+    table = pq.read_table(output)
+    if table.num_rows != manifest.get("rows"):
+        raise ValueError("Alpha signal row count mismatch")
+    for column, value in (
+        ("model_version", expected_model_version),
+        ("feature_set_id", expected_feature_set_id),
+    ):
+        if set(table[column].to_pylist()) != {value}:
+            raise ValueError(f"Alpha signal {column} identity mismatch")
+    metadata = table.schema.metadata or {}
+    if metadata.get(b"ticknet.dataset_fingerprint") != expected_dataset_fingerprint.encode():
+        raise ValueError("Alpha signal dataset identity mismatch")
+    return manifest

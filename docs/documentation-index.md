@@ -37,6 +37,7 @@ Use `project-status.md` and the main roadmap for current state. M0, M1, M2a–M2
 | Document | Contents |
 |---|---|
 | [Project status](project-status.md) | Current capabilities, findings, data access, and next steps |
+| [Signal acceptance](architecture/signal-acceptance.md) | Synthetic export, installed platform selection and native replay; integrity and scope limits |
 | [Model catalog](model-catalog.md) | Model inputs, methods, strengths, limitations, and research status |
 
 ### Next-day research

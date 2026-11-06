@@ -138,3 +138,6 @@ default = true
 [[tool.ty.overrides]]
 include = ["src/ticknet/research/agents/client.py"]
 rules = { unresolved-import = "ignore" }
+
+[tool.ty.src]
+exclude = ["integration/signal-acceptance"]

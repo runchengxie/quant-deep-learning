@@ -29,6 +29,8 @@ PRESERVED_SOURCE_START = "<!-- preserved-source:start -->"
 PRESERVED_SOURCE_END = "<!-- preserved-source:end -->"
 CJK_PROSE = re.compile(r"[\u3400-\u9fff]")
 ENGLISH_DOCUMENTS = {
+    "docs/architecture/signal-acceptance.md",
+    "docs/superpowers/plans/2026-11-06-signal-acceptance.md",
     "README.md",
     "AGENTS.md",
     "docs/index.md",
