@@ -1,3 +1,4 @@
 # This optional project is checked separately with its own installed environment.
 [environment]
 python-version = "3.12"
+extra-paths = ["../../src"]

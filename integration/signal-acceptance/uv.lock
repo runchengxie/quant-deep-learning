@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -961,6 +961,11 @@ wheels = [
 ]
 
 [[package]]
+name = "quant-backtest-runtime"
+version = "0.1.0"
+source = { git = "https://github.com/runchengxie/quant-backtest-runtime.git?rev=c9493008ad41da4391db38542528a4ccbe385b73#c9493008ad41da4391db38542528a4ccbe385b73" }
+
+[[package]]
 name = "quant-deep-learning"
 version = "0.2.0"
 source = { editable = "../../" }
@@ -1182,6 +1187,7 @@ dependencies = [
     { name = "numpy" },
     { name = "pandas" },
     { name = "pytest" },
+    { name = "quant-backtest-runtime" },
     { name = "quant-deep-learning" },
     { name = "quant-platform" },
     { name = "research-contracts" },
@@ -1194,6 +1200,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.24,<2.4" },
     { name = "pandas", specifier = ">=2,<3" },
     { name = "pytest", specifier = ">=8,<10" },
+    { name = "quant-backtest-runtime", git = "https://github.com/runchengxie/quant-backtest-runtime.git?rev=c9493008ad41da4391db38542528a4ccbe385b73" },
     { name = "quant-deep-learning", editable = "../../" },
     { name = "quant-platform", git = "https://github.com/runchengxie/quant-platform.git?rev=282afca4c4ca210d46eed096a943972662fede99" },
     { name = "research-contracts", git = "https://github.com/runchengxie/quant-platform.git?subdirectory=packages%2Fresearch-contracts&rev=282afca4c4ca210d46eed096a943972662fede99" },
