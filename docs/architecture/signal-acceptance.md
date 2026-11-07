@@ -29,6 +29,11 @@ The source is a formal prediction artifact with explicit dataset metadata. Expor
 
 The default unit suite checks duplicate stock-days, nonfinite predictions, source-overwrite prevention, model/input/dataset/source identity mismatch, and changed signal bytes or manifest identity. Existing formal-artifact validation also checks source date ordering and metadata before export.
 
+Declared prediction versions are checked before export: `ticknet.prediction_schema_version`
+may be absent for historical artifacts, or contain UTF-8 `ticknet.research.predictions.v1`.
+Unknown, blank or malformed declarations fail before writing signals or their sidecar.
+This guard does not add a checkpoint protocol or change the existing unversioned writer.
+
 ## Runtime acceptance scope
 
 The queue consumes a schema-v1 diagnostic request with content-addressed positions,
