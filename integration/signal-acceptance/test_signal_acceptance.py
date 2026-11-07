@@ -29,7 +29,7 @@ from ticknet.research.registry import file_sha256
 PLATFORM_COMMIT = "282afca4c4ca210d46eed096a943972662fede99"
 
 
-def test_export_to_installed_platform_native_replay(tmp_path: Path) -> None:
+def signal_positions(tmp_path: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     for package in ("quant-platform", "research-contracts"):
         provenance = json.loads(distribution(package).read_text("direct_url.json") or "{}")
         assert provenance["vcs_info"]["commit_id"] == PLATFORM_COMMIT
@@ -97,6 +97,11 @@ def test_export_to_installed_platform_native_replay(tmp_path: Path) -> None:
     assert positions["rebalance_date"].tolist() == ["20260109"]
     periods = build_position_replay_periods(positions, pricing)
     assert periods["exit_date"].tolist() == [pd.Timestamp("2026-01-13")]
+    return positions, pricing, periods
+
+
+def test_export_to_installed_platform_native_replay(tmp_path: Path) -> None:
+    positions, pricing, periods = signal_positions(tmp_path)
     result = run_native_position_replay(
         positions, pricing, periods, config=PositionBacktestConfig(price_col="open")
     )
