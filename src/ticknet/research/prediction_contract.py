@@ -126,12 +126,25 @@ def attach_formal_prediction_metadata(
     return table.replace_schema_metadata(metadata)
 
 
+def _validate_prediction_schema_version(metadata: dict[bytes, bytes]) -> None:
+    declared = metadata.get(b"ticknet.prediction_schema_version")
+    if declared is None:
+        return  # Historical unversioned artifacts keep their existing contract.
+    try:
+        version = declared.decode("utf-8").strip()
+    except UnicodeDecodeError as error:
+        raise PredictionContractError("prediction schema version must be UTF-8") from error
+    if version != "ticknet.research.predictions.v1":
+        raise PredictionContractError(f"Unsupported prediction schema version: {version!r}")
+
+
 def _validate_contract_values(
     metadata: dict[bytes, bytes],
     *,
     expected_dataset_fingerprint: str | None,
     expected_target_return_contract: str,
 ) -> dict[str, str]:
+    _validate_prediction_schema_version(metadata)
     values = {name: _metadata_text(metadata, name) for name in METADATA_KEYS}
     expected = {
         "target_return_contract": expected_target_return_contract,

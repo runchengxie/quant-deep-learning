@@ -124,3 +124,27 @@ def test_formal_prediction_contract_rejects_duplicate_stock_day(tmp_path) -> Non
     pq.write_table(duplicate, path)
     with pytest.raises(PredictionContractError, match="重复股票日"):
         validate_formal_prediction_artifact(path, expected_universe_size=2)
+
+
+@pytest.mark.parametrize("version", [b"ticknet.research.predictions.v2", b"", b"\xff"])
+def test_formal_prediction_contract_rejects_unsupported_declared_schema(
+    tmp_path: Path, version: bytes
+) -> None:
+    path = tmp_path / "versioned.parquet"
+    _write_formal_predictions(path)
+    table = pq.read_table(path)
+    metadata = dict(table.schema.metadata or {})
+    metadata[b"ticknet.prediction_schema_version"] = version
+    pq.write_table(table.replace_schema_metadata(metadata), path)
+    with pytest.raises(PredictionContractError, match="schema version"):
+        validate_formal_prediction_artifact(path, expected_universe_size=2)
+
+
+def test_formal_prediction_contract_accepts_known_declared_schema(tmp_path: Path) -> None:
+    path = tmp_path / "versioned.parquet"
+    _write_formal_predictions(path)
+    table = pq.read_table(path)
+    metadata = dict(table.schema.metadata or {})
+    metadata[b"ticknet.prediction_schema_version"] = b"ticknet.research.predictions.v1"
+    pq.write_table(table.replace_schema_metadata(metadata), path)
+    assert validate_formal_prediction_artifact(path, expected_universe_size=2).row_count == 6

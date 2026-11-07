@@ -177,3 +177,23 @@ def test_export_rejects_hard_link_to_source(tmp_path: Path, alias_is_manifest: b
     assert source.read_bytes() == before
     if alias_is_manifest:
         assert not target.exists()
+
+
+def test_unknown_prediction_version_is_rejected_before_signal_publication(tmp_path: Path) -> None:
+    source, output = tmp_path / "predictions.parquet", tmp_path / "signals.parquet"
+    table = attach_formal_prediction_metadata(_formal_table(), dataset_fingerprint="synthetic")
+    metadata = dict(table.schema.metadata or {})
+    metadata[b"ticknet.prediction_schema_version"] = b"ticknet.research.predictions.v2"
+    pq.write_table(table.replace_schema_metadata(metadata), source)
+    source_hash = file_sha256(source)
+    with pytest.raises(ValueError, match="schema version"):
+        export_alpha_signal_artifact(
+            source,
+            output,
+            expected_universe_size=3,
+            model_version="synthetic",
+            feature_set_id="synthetic",
+        )
+    assert not output.exists()
+    assert not output.with_suffix(".manifest.json").exists()
+    assert file_sha256(source) == source_hash
