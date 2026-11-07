@@ -152,3 +152,31 @@ def test_prediction_cli_accepts_normalized_npy(tmp_path, capsys):
     output = json.loads(capsys.readouterr().out)
     assert len(output["probabilities"]) == 3
     assert output["direction"] in {0, 1, 2}
+
+
+def test_normalized_input_respects_manifest_minimum_events(tmp_path):
+    checkpoint, manifest = _artifacts(tmp_path)
+    payload = json.loads(manifest.read_text())
+    payload["metadata"]["min_valid_events"] = 20
+    manifest.write_text(json.dumps(payload))
+    predictor = NextDayPredictor(checkpoint, manifest)
+    with pytest.raises(ValueError, match=r"events|事件"):
+        predictor.predict_normalized(np.ones((19, 40), dtype=np.float32))
+    signal = predictor.predict_normalized(np.ones((20, 40), dtype=np.float32))
+    assert np.isfinite(signal.score)
+
+
+def test_checkpoint_type_error_never_retries_without_weights_only(tmp_path, monkeypatch):
+    from ticknet.nextday import inference
+
+    calls = []
+
+    def rejected(*args, **kwargs):
+        calls.append(kwargs)
+        raise TypeError("checkpoint decoding failed")
+
+    monkeypatch.setattr(inference.torch, "load", rejected)
+    with pytest.raises(TypeError, match="decoding failed"):
+        inference._load_checkpoint(tmp_path / "untrusted.pt", torch.device("cpu"))
+    assert len(calls) == 1
+    assert calls[0]["weights_only"] is True
