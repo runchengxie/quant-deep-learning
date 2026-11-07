@@ -30,10 +30,7 @@ class NextDaySignal:
 
 
 def _load_checkpoint(path: Path, device: torch.device) -> dict[str, Any]:
-    try:
-        checkpoint = torch.load(path, map_location=device, weights_only=True)
-    except TypeError:  # pragma: no cover - 兼容旧 PyTorch
-        checkpoint = torch.load(path, map_location=device)
+    checkpoint = torch.load(path, map_location=device, weights_only=True)
     if not isinstance(checkpoint, dict):
         raise ValueError("checkpoint 根节点应为对象")
     return cast(dict[str, Any], checkpoint)
@@ -126,6 +123,11 @@ class NextDayPredictor:
             chunks_per_sample=self.chunks_per_sample,
             chunk_size=self.chunk_size,
         )
+        if normalized.shape[0] < self.min_valid_events:
+            raise ValueError(
+                f"Insufficient normalized events: need {self.min_valid_events}, "
+                f"got {normalized.shape[0]}"
+            )
         features = torch.from_numpy(packed).unsqueeze(0).unsqueeze(2).to(self.device)
         with torch.inference_mode():
             output = self.model(features)

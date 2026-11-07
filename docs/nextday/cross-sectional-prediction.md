@@ -237,3 +237,21 @@ Run seeds 0, 1, and 2, and compare capacity using validation only. 2024 Q4 has a
 The current version implements the monthly snapshot adapter, dual-head chunk encoder, AMP, gradient accumulation, checkpoint resume, and Colab handoff. The five-year raw-200 set, raw-1000 Top-100 set, multi-horizon evaluation, and four-cell three-seed capacity matrix are complete. See the [raw-data expansion roadmap](raw-data-expansion-roadmap.md) and [multi-horizon roadmap](multi-horizon-data-expansion-roadmap.md). The event-stream track handles stored orders and trades; see [eventstream.md](eventstream.md).
 
 Only `1M/raw-200` remains a candidate. Next, freeze the three-seed aggregation method, checkpoints, and one-time test acceptance criteria before deciding whether to unlock 2025. A multi-day model can cache daily embeddings and train on them without repeatedly encoding raw ticks.
+
+## Inference input checks
+
+`NextDayPredictor` checks a manifest's stored fingerprint against its content and,
+when declared, the checkpoint's dataset fingerprint against that manifest. Missing
+historical fingerprint fields are compatibility cases, not verified model/input
+identity. Model dimensions and strict state loading remain separate checks.
+
+Both raw and normalized event inputs must meet the manifest's `min_valid_events`
+threshold before model inference. Normalized inputs must still be finite `N × 40`
+arrays; padding cannot satisfy a declared minimum of observed events. Historical
+manifests without a minimum retain their existing default of one event. A model
+using only the last chunks does not remove the source window's validity requirement.
+
+Checkpoint decoding always uses `weights_only=True`. A decoding `TypeError` is
+propagated rather than retried through unrestricted deserialization. These guards
+do not certify a checkpoint's training target, split history, data provenance or
+compatibility with a different prediction/publication contract.
