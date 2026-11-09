@@ -111,7 +111,23 @@ jobs:
           version: "0.13.7"
           enable-cache: true
           python-version: "3.12"
-      - name: Accept synthetic signals with installed pinned platform replay
+      - name: Check out pinned runtime provider
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: runchengxie/quant-backtest-runtime
+          ref: c9493008ad41da4391db38542528a4ccbe385b73
+          path: .runtime-provider
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.3"
+          cache-dependency-path: .runtime-provider/go.sum
+      - name: Build pinned Go queue executable
+        working-directory: .runtime-provider
+        run: go build -trimpath -mod=readonly -ldflags "-X github.com/runchengxie/quant-backtest-runtime/internal/app.SourceRevision=c9493008ad41da4391db38542528a4ccbe385b73" -o "$RUNNER_TEMP/backtest-job" ./cmd/backtest-job
+      - name: Accept synthetic signals with installed platform and real Go worker
         env:
           UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/signal-acceptance
+          BACKTEST_GO_EXECUTABLE: ${{ runner.temp }}/backtest-job
         run: uv run --project integration/signal-acceptance --locked pytest -c integration/signal-acceptance/pyproject.toml integration/signal-acceptance -q

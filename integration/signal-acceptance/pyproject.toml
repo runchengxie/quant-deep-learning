@@ -2,7 +2,7 @@
 name = "ticknet-signal-acceptance"
 version = "0.0.0"
 requires-python = ">=3.12"
-dependencies = ["quant-deep-learning", "quant-platform", "research-contracts", "pytest>=8,<10", "torch>=2", "pandas>=2,<3", "numpy>=1.24,<2.4"]
+dependencies = ["quant-deep-learning", "quant-platform", "research-contracts", "quant-backtest-runtime", "pytest>=8,<10", "torch>=2", "pandas>=2,<3", "numpy>=1.24,<2.4"]
 
 [tool.uv]
 package = false
@@ -11,6 +11,7 @@ package = false
 torch = { index = "pytorch-cpu" }
 quant-deep-learning = { path = "../..", editable = true }
 quant-platform = { git = "https://github.com/runchengxie/quant-platform.git", rev = "282afca4c4ca210d46eed096a943972662fede99" }
+quant-backtest-runtime = { git = "https://github.com/runchengxie/quant-backtest-runtime.git", rev = "c9493008ad41da4391db38542528a4ccbe385b73" }
 research-contracts = { git = "https://github.com/runchengxie/quant-platform.git", rev = "282afca4c4ca210d46eed096a943972662fede99", subdirectory = "packages/research-contracts" }
 
 [tool.pytest.ini_options]
