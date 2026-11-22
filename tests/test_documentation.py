@@ -29,6 +29,9 @@ PRESERVED_SOURCE_START = "<!-- preserved-source:start -->"
 PRESERVED_SOURCE_END = "<!-- preserved-source:end -->"
 CJK_PROSE = re.compile(r"[\u3400-\u9fff]")
 ENGLISH_DOCUMENTS = {
+    "docs/research/end-to-end-quant-landscape.md",
+    "docs/research/end-to-end-research-roadmap.md",
+    "docs/references/end-to-end-quant-papers.md",
     "docs/architecture/signal-acceptance.md",
     "docs/superpowers/plans/2026-11-06-signal-acceptance.md",
     "README.md",

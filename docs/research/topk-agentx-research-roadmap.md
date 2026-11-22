@@ -197,3 +197,7 @@ M0–M3 are complete. Recent-fold frozen and joint three-seed M4/M5 comparisons 
 6. Revisit `probe150m` only after cross-window net active-return gains are stable and budget/seed-0 gates are specified.
 
 M6/M7 retain their entry gates. Raw-book capacity/window expansion remains stopped.
+
+## Related candidate library
+
+The [end-to-end research roadmap](end-to-end-research-roadmap.md) records longer-term objective, portfolio-policy, graph, multimodal and transfer hypotheses. It links E2E-01 to M6 and E2E-03 to M7 without changing their entry gates or the current next actions.

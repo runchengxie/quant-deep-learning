@@ -2,6 +2,10 @@
 
 This directory preserves papers used by the project and reading notes derived from them. Some sources relate to completed or discontinued research stages. For the current implementation and experiment status, use [Project status](../project-status.md).
 
+## End-to-end quantitative learning
+
+The [source ledger](end-to-end-quant-papers.md) records checked literature anchors and unverified leads for the [research landscape](../research/end-to-end-quant-landscape.md). It distinguishes metadata/abstract checks from full reading and local reproduction.
+
 ## DeepLOB
 
 - Title: DeepLOB: Deep Convolutional Neural Networks for Limit Order Books
