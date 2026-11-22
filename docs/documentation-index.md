@@ -55,6 +55,14 @@ Next-day cross-sectional prediction, including sample rules, data processing, tr
 | [H5 rolling event-stream roadmap](nextday/h5-rolling-eventstream-roadmap.md) | H5 Rank IC target, 3/1/1 rolling protocol, and full-day event-data pilot |
 | [Hardware and experiment roadmap](nextday/hardware-constraints-and-experiment-roadmap.md) | Hardware limits, research conventions, and staged roadmap |
 
+### End-to-end learning candidates
+
+| Document | Contents |
+|---|---|
+| [Research landscape](research/end-to-end-quant-landscape.md) | Task definitions, market scope, evidence boundaries and open questions |
+| [Candidate roadmap](research/end-to-end-research-roadmap.md) | Priorities, hypotheses, entry/stop gates and actionable preparation tasks |
+| [Source ledger](references/end-to-end-quant-papers.md) | Checked anchors, verification depth and unresolved literature leads |
+
 ### Research records
 
 Top-K tradable portfolios and the AgentX automated quantitative research loop.
