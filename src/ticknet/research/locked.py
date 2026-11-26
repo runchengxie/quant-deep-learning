@@ -6,7 +6,7 @@ import hashlib
 import json
 import secrets
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -122,7 +122,7 @@ def issue_locked_test_approval(
     )
     checkpoint_bundle_sha256 = _canonical_sha256(checkpoint_bundle)
     spec_sha256 = registry.spec_sha256(experiment_id)
-    approved_at = datetime.now(timezone.utc).isoformat()
+    approved_at = datetime.now(UTC).isoformat()
     token = "locked_" + secrets.token_urlsafe(32)
     approval_id = registry.issue_locked_approval(
         experiment_id,

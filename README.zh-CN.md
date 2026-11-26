@@ -24,7 +24,7 @@ FI-2010 DeepLOB 论文复现在 `ticknet.fi2010` 中独立维护，不能证明�
 
 ## 快速开始
 
-`pyproject.toml` 声明支持 Python 3.10 及以上版本。当前公开 CI 使用 Python 3.12，未在 CI 中验证其他版本。合成数据检查无需私有行情、GPU 或 `quant-platform`。
+项目要求 Python 3.11 及以上版本，以使用包含已发布安全修复的 Pillow 和 filelock 锁定版本。当前公开 CI 使用 Python 3.12，未在 CI 中验证其他版本。合成数据检查无需私有行情、GPU 或 `quant-platform`。
 
 ```bash
 uv sync --locked --extra dev

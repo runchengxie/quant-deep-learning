@@ -7,7 +7,7 @@ name = "quant-deep-learning"
 version = "0.2.0"
 description = "End-to-end quantitative deep-learning research for structured market data"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "lightgbm>=4.5,<5",
     "matplotlib>=3.8",
@@ -71,7 +71,7 @@ namespaces = false
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "UP", "B", "C4", "C90", "PT", "SIM", "RUF"]
@@ -121,8 +121,8 @@ conflicts = [[{ group = "cpu" }, { group = "gpu" }]]
 research-code-quality = { git = "https://github.com/runchengxie/research-code-quality.git", rev = "76a869e4f7982a456e4807f454815d6aa027d712" }
 torch = [
     { index = "pytorch-cpu", group = "cpu", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
-    { index = "pypi", group = "cpu", marker = "sys_platform != 'linux' and sys_platform != 'win32'" },
-    { index = "pypi", group = "gpu" },
+    { index = "pypi", marker = "sys_platform != 'linux' and sys_platform != 'win32'" },
+    { index = "pypi", group = "gpu", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
 
 [[tool.uv.index]]
