@@ -24,7 +24,7 @@ The main research path uses trading-day splits and evaluates cross-sectional ran
 
 ## Quick start
 
-The package declares Python 3.10 or later in `pyproject.toml`. Current public CI runs on Python 3.12; other Python versions are outside its validation matrix. The synthetic-data checks do not require private market data, a GPU, or `quant-platform`.
+The package requires Python 3.11 or later so its locked Pillow and filelock versions include the published security fixes. Current public CI runs on Python 3.12; other Python versions are outside its validation matrix. The synthetic-data checks do not require private market data, a GPU, or `quant-platform`.
 
 ```bash
 uv sync --locked --extra dev
