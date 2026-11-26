@@ -8,7 +8,10 @@ dependencies = ["quant-deep-learning", "quant-platform", "research-contracts", "
 package = false
 
 [tool.uv.sources]
-torch = { index = "pytorch-cpu" }
+torch = [
+    { index = "pytorch-cpu", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+    { index = "pypi", marker = "sys_platform != 'linux' and sys_platform != 'win32'" },
+]
 quant-deep-learning = { path = "../..", editable = true }
 quant-platform = { git = "https://github.com/runchengxie/quant-platform.git", rev = "282afca4c4ca210d46eed096a943972662fede99" }
 quant-backtest-runtime = { git = "https://github.com/runchengxie/quant-backtest-runtime.git", rev = "c9493008ad41da4391db38542528a4ccbe385b73" }
@@ -22,3 +25,8 @@ filterwarnings = ["error"]
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 explicit = true
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+default = true
