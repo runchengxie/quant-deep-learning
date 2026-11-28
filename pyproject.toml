@@ -25,7 +25,7 @@ dev = [
     "pytest-cov>=5.0,<8",
     "research-code-quality",
     "ruff>=0.16,<0.18",
-    "ty==0.0.105",
+    "ty==0.0.110",
     "nbqa>=1.8,<2",
     "tomli>=2.0,<3",
 ]
